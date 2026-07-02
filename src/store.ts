@@ -2,22 +2,23 @@ import { create } from 'zustand'
 import type Lenis from 'lenis'
 
 /**
- * Wspólny stan sceny. Wartości *Progress są zapisywane przez ScrollTriggery
- * (DOM) i odczytywane w useFrame (R3F) przez getState() — bez re-renderów.
+ * Shared scene state. The *Progress values are written by ScrollTriggers
+ * (DOM) and read inside useFrame (R3F) via getState() — no re-renders.
  */
 interface SceneState {
-  /** "Tryb spokojny" — mniej cząsteczek, bez bloom, łagodniejszy scroll. */
-  calm: boolean
-  setCalm: (calm: boolean) => void
-
   isMobile: boolean
+  /** honored silently — there is intentionally no motion-settings UI */
+  reducedMotion: boolean
 
   introProgress: number
-  memoryProgress: number
   revealProgress: number
+  transitionProgress: number
+  chapterProgress: number
+  finalProgress: number
 
-  /** indeks aktywnej sceny (pasek postępu) */
-  activeScene: number
+  /** the flight confirmation unlocks once the final scene is reached */
+  unlocked: boolean
+  setUnlocked: (unlocked: boolean) => void
 
   lenis: Lenis | null
 }
@@ -30,16 +31,17 @@ const isMobileViewport =
   typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches
 
 export const useSceneStore = create<SceneState>((set) => ({
-  calm: prefersReducedMotion,
-  setCalm: (calm) => set({ calm }),
-
   isMobile: isMobileViewport,
+  reducedMotion: prefersReducedMotion,
 
   introProgress: 0,
-  memoryProgress: 0,
   revealProgress: 0,
+  transitionProgress: 0,
+  chapterProgress: 0,
+  finalProgress: 0,
 
-  activeScene: 0,
+  unlocked: false,
+  setUnlocked: (unlocked) => set({ unlocked }),
 
   lenis: null,
 }))

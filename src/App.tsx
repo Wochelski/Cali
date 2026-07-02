@@ -4,20 +4,19 @@ import { useGSAP } from '@gsap/react'
 import { useLenis } from './hooks/useLenis'
 import { GlobeScene } from './components/GlobeScene'
 import { IntroScene } from './components/scenes/IntroScene'
-import { MemoryScene } from './components/scenes/MemoryScene'
-import { CaliforniaReveal } from './components/scenes/CaliforniaReveal'
-import { CaliforniaMap } from './components/CaliforniaMap'
+import { RevealScene } from './components/scenes/RevealScene'
+import { TransitionScene } from './components/scenes/TransitionScene'
+import { ChaptersScene } from './components/scenes/ChaptersScene'
 import { FinalScene } from './components/scenes/FinalScene'
 import { Progress } from './components/Progress'
-import { CalmModeToggle } from './components/CalmModeToggle'
-import { MusicToggle } from './components/MusicToggle'
+import { MusicControl } from './components/MusicControl'
 
 gsap.registerPlugin(ScrollTrigger, useGSAP)
 
 /**
- * Jedna ciągła opowieść:
- * stały canvas z globusem w tle (sceny 1–3), nad nim sekcje-sceny,
- * każda ze sticky wnętrzem i timeline'em sterowanym scrollem.
+ * One continuous story: a persistent globe canvas behind five pinned
+ * scenes — the letter, the reveal, a breath, nine chapters of the road,
+ * and the closing frame that unlocks the confirmation.
  */
 export default function App() {
   useLenis()
@@ -29,15 +28,14 @@ export default function App() {
 
       <main className="relative z-10">
         <IntroScene />
-        <MemoryScene />
-        <CaliforniaReveal />
-        <CaliforniaMap />
+        <RevealScene />
+        <TransitionScene />
+        <ChaptersScene />
         <FinalScene />
       </main>
 
       <Progress />
-      <CalmModeToggle />
-      <MusicToggle />
+      <MusicControl />
       <div className="grain" aria-hidden="true" />
     </>
   )

@@ -1,87 +1,105 @@
-/** Miejsce, w którym już byliśmy — punkt na globusie. */
-export interface Destination {
+/** One chapter of the journey — a point on the globe with its own mood. */
+export interface Chapter {
   id: string
-  /** wewnętrzna nazwa punktu (miasto) — NIE pokazywana w UI */
-  city: string
-  /** jedyna widoczna etykieta: nazwa kraju */
-  label: string
+  name: string
+  /** one short emotional line under the name */
+  line: string
   lat: number
   lon: number
 }
 
-/** Moment na trasie Kalifornia 2026 — współrzędne w układzie SVG mapy. */
-export interface RouteStop {
-  id: string
-  name: string
-  /** region / droga — etykieta krajobrazowa, nie opis */
-  region: string
-  x: number
-  y: number
-  /** przesunięcie numeru przystanku względem punktu */
-  labelDx?: number
-  labelDy?: number
-}
-
 export interface FlightInfo {
-  date: string
   from: string
   to: string
 }
 
 /* ------------------------------------------------------------------ */
-/* Scena 2 — globus podróży                                            */
+/* The nine chapters of the route                                      */
 /* ------------------------------------------------------------------ */
 
-export const DESTINATIONS: Destination[] = [
-  { id: 'barcelona', city: 'Barcelona', label: 'Hiszpania', lat: 41.3874, lon: 2.1686 },
-  { id: 'berlin', city: 'Berlin', label: 'Niemcy', lat: 52.52, lon: 13.405 },
-  { id: 'madryt', city: 'Madryt', label: 'Hiszpania', lat: 40.4168, lon: -3.7038 },
-  { id: 'tajlandia', city: 'Bangkok', label: 'Tajlandia', lat: 13.7563, lon: 100.5018 },
-  { id: 'chorwacja', city: 'Split', label: 'Chorwacja', lat: 43.5081, lon: 16.4402 },
-  { id: 'chiny', city: 'Pekin', label: 'Chiny', lat: 39.9042, lon: 116.4074 },
-  { id: 'grecja', city: 'Ateny', label: 'Grecja', lat: 37.9838, lon: 23.7275 },
-  { id: 'nowy-jork', city: 'Nowy Jork', label: 'USA', lat: 40.7128, lon: -74.006 },
-  { id: 'boston', city: 'Boston', label: 'USA', lat: 42.3601, lon: -71.0589 },
+export const CHAPTERS: Chapter[] = [
+  {
+    id: 'los-angeles',
+    name: 'Los Angeles',
+    line: 'The first breath of California. Palms, lights, and the beginning of everything.',
+    lat: 34.05,
+    lon: -118.25,
+  },
+  {
+    id: 'malibu',
+    name: 'Malibu',
+    line: 'Where the ocean feels like a promise.',
+    lat: 34.03,
+    lon: -118.78,
+  },
+  {
+    id: 'big-sur',
+    name: 'Big Sur',
+    line: 'A road above the cliffs, made for remembering.',
+    lat: 36.27,
+    lon: -121.81,
+  },
+  {
+    id: 'redwoods',
+    name: 'Redwoods',
+    line: 'Trees taller than time. A silence worth keeping.',
+    lat: 37.5,
+    lon: -119.6,
+  },
+  {
+    id: 'yosemite',
+    name: 'Yosemite',
+    line: 'Granite walls, waterfalls, and the kind of view that leaves us quiet.',
+    lat: 37.75,
+    lon: -119.59,
+  },
+  {
+    id: 'death-valley',
+    name: 'Death Valley',
+    line: 'Desert light, endless space, and the beautiful edge of nowhere.',
+    lat: 36.46,
+    lon: -116.87,
+  },
+  {
+    id: 'las-vegas',
+    name: 'Las Vegas',
+    line: 'Neon in the desert. Half movie, half dream.',
+    lat: 36.17,
+    lon: -115.14,
+  },
+  {
+    id: 'new-york',
+    name: 'New York',
+    line: 'One more chapter before we turn toward home.',
+    lat: 40.7128,
+    lon: -74.006,
+  },
+  {
+    id: 'boston',
+    name: 'Boston',
+    line: 'The final stop. A memory that will stay much longer than the trip.',
+    lat: 42.3601,
+    lon: -71.0589,
+  },
 ]
 
-/** Cel następnego rozdziału — środek Kalifornii. */
+/** Where the reveal points the globe before the chapters begin. */
 export const CALIFORNIA = { lat: 36.6, lon: -119.4 }
 
-/** Punkt startu — otwarcie strony. */
-export const HOME = { city: 'Warszawa', coords: '52°14′ N — 21°01′ E' }
-
 /* ------------------------------------------------------------------ */
-/* Scena 3 — loty                                                      */
+/* Flights                                                             */
 /* ------------------------------------------------------------------ */
 
 export const FLIGHTS: FlightInfo[] = [
-  { date: '03.09.2026', from: 'Warszawa', to: 'Los Angeles' },
-  { date: '15.09.2026', from: 'Las Vegas', to: 'Warszawa' },
+  { from: 'Warsaw', to: 'Los Angeles' },
+  { from: 'Las Vegas', to: 'Warsaw' },
 ]
 
-/* ------------------------------------------------------------------ */
-/* Scena 4 — trasa po Kalifornii (viewBox mapy: 0 0 760 940)           */
-/* Współrzędne to stylizowane odwzorowanie: lon −125…−114 → x 60…742,  */
-/* lat 42…32 → y 0…926.                                                */
-/* ------------------------------------------------------------------ */
-
-export const MAP_VIEWBOX = { width: 760, height: 940 }
-
-export const ROUTE_STOPS: RouteStop[] = [
-  { id: 'la', name: 'Los Angeles', region: 'Westside', x: 418, y: 736, labelDx: 10, labelDy: 20 },
-  { id: 'malibu', name: 'Malibu', region: 'Pacific Coast Highway', x: 383, y: 733, labelDx: -16, labelDy: 22 },
-  { id: 'santa-barbara', name: 'Santa Barbara', region: 'Central Coast', x: 329, y: 702, labelDx: 2, labelDy: 24 },
-  { id: 'big-sur', name: 'Big Sur', region: 'Highway 1', x: 198, y: 531, labelDx: -26, labelDy: 4 },
-  { id: 'yosemite', name: 'Yosemite', region: 'Sierra Nevada', x: 335, y: 394, labelDx: -28, labelDy: -8 },
-  { id: 'death-valley', name: 'Death Valley', region: 'Mojave', x: 504, y: 513, labelDx: -2, labelDy: -14 },
-  { id: 'las-vegas', name: 'Las Vegas', region: 'Nevada', x: 611, y: 540, labelDx: 12, labelDy: 6 },
-]
-
-/** Kolejność scen — używana przez pasek postępu. */
+/** Scene order — used by the progress rail. */
 export const SCENES = [
-  { id: 'intro', label: 'Otwarcie' },
-  { id: 'memory', label: 'Podróże' },
-  { id: 'reveal', label: 'Kalifornia' },
-  { id: 'route', label: 'Trasa' },
-  { id: 'final', label: 'Finał' },
+  { id: 'intro', label: 'For you' },
+  { id: 'reveal', label: 'The next chapter' },
+  { id: 'transition', label: 'Dots on a map' },
+  { id: 'chapters', label: 'The road' },
+  { id: 'final', label: 'One greater road' },
 ] as const

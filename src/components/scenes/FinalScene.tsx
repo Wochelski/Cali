@@ -1,67 +1,73 @@
 import { useRef } from 'react'
-import { Download } from 'lucide-react'
 import { SceneLayout } from '../SceneLayout'
 import { useSceneTimeline } from '../../hooks/useGSAPScroll'
-import { FLIGHTS } from '../../data/trips'
+import { useSceneStore } from '../../store'
+import { DownloadButton } from '../DownloadButton'
 
-const PDF_HREF = `${import.meta.env.BASE_URL}files/potwierdzenie-lotu.pdf`
-
-/** Finał: droga znika za horyzontem, życzenia i bilet do pobrania. */
+/**
+ * The closing frame: the globe pulls slowly away with the whole route
+ * glowing, a horizon line settles, and the confirmation unlocks.
+ */
 export function FinalScene() {
   const ref = useRef<HTMLElement>(null)
 
-  useSceneTimeline(ref, (tl) => {
-    tl.fromTo(
-      '[data-final-road]',
-      { strokeDashoffset: 1 },
-      { strokeDashoffset: 0, duration: 0.35 },
-      0.04,
-    )
-      .fromTo('[data-final-horizon]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25 }, 0.07)
-      .fromTo(
-        '[data-final-rule]',
-        { autoAlpha: 0, scaleX: 0 },
-        { autoAlpha: 1, scaleX: 1, duration: 0.08 },
-        0.28,
-      )
-      .fromTo(
-        '[data-final-wishes]',
-        { autoAlpha: 0, y: 24, filter: 'blur(8px)' },
-        { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.12 },
-        0.34,
-      )
-      .fromTo(
-        '[data-final-sub]',
-        { autoAlpha: 0, y: 20 },
-        { autoAlpha: 1, y: 0, duration: 0.1 },
-        0.44,
-      )
-      .fromTo(
-        '[data-final-flights]',
-        { autoAlpha: 0, y: 18 },
-        { autoAlpha: 1, y: 0, duration: 0.1 },
-        0.54,
-      )
-      .fromTo(
-        '[data-final-signature]',
-        { autoAlpha: 0, y: 18, filter: 'blur(6px)' },
-        { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.1 },
-        0.64,
-      )
-      .fromTo(
-        '[data-final-cta]',
-        { autoAlpha: 0, y: 18 },
-        { autoAlpha: 1, y: 0, duration: 0.1 },
-        0.74,
-      )
-  })
+  useSceneTimeline(
+    ref,
+    (tl) => {
+      tl.fromTo('[data-final-horizon]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25 }, 0.08)
+        .fromTo(
+          '[data-final-road]',
+          { strokeDashoffset: 1 },
+          { strokeDashoffset: 0, duration: 0.35 },
+          0.06,
+        )
+        .fromTo(
+          '[data-final-line="0"]',
+          { autoAlpha: 0, y: 24, filter: 'blur(8px)' },
+          { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.11 },
+          0.18,
+        )
+        .fromTo(
+          '[data-final-line="1"]',
+          { autoAlpha: 0, y: 24, filter: 'blur(8px)' },
+          { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.11 },
+          0.28,
+        )
+        .fromTo(
+          '[data-final-dedication]',
+          { autoAlpha: 0, y: 20, filter: 'blur(6px)' },
+          { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.11 },
+          0.46,
+        )
+        .fromTo(
+          '[data-final-whisper]',
+          { autoAlpha: 0, y: 16 },
+          { autoAlpha: 1, y: 0, duration: 0.1 },
+          0.58,
+        )
+        .fromTo(
+          '[data-final-cta]',
+          { autoAlpha: 0, y: 18 },
+          { autoAlpha: 1, y: 0, duration: 0.1 },
+          0.7,
+        )
+    },
+    {
+      onProgress: (p) => {
+        useSceneStore.setState({ finalProgress: p })
+        // reaching the ending unlocks the confirmation — and it stays unlocked
+        if (p > 0.05 && !useSceneStore.getState().unlocked) {
+          useSceneStore.getState().setUnlocked(true)
+        }
+      },
+    },
+  )
 
   return (
-    <SceneLayout ref={ref} id="final" heightVh={210}>
-      {/* delikatny gradient zachodu przy horyzoncie */}
-      <div className="absolute inset-0 bg-gradient-to-b from-night-950 via-night-900 to-[#2a1a12]" />
+    <SceneLayout ref={ref} id="final" heightVh={240}>
+      {/* warm horizon under the pulling-away globe */}
+      <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[#1d1410] via-[#0d1220]/60 to-transparent" />
 
-      {/* droga zbiegająca do horyzontu */}
       <svg
         className="absolute inset-0 h-full w-full"
         viewBox="0 0 1000 600"
@@ -70,31 +76,31 @@ export function FinalScene() {
       >
         <defs>
           <linearGradient id="final-road-grad" x1="0" y1="1" x2="0" y2="0">
-            <stop offset="0" stopColor="#e08a4e" stopOpacity="0.7" />
-            <stop offset="1" stopColor="#e08a4e" stopOpacity="0" />
+            <stop offset="0" stopColor="#E6B66A" stopOpacity="0.6" />
+            <stop offset="1" stopColor="#E6B66A" stopOpacity="0" />
           </linearGradient>
           <linearGradient id="final-horizon-grad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stopColor="#e08a4e" stopOpacity="0" />
-            <stop offset="0.5" stopColor="#f0a869" stopOpacity="0.5" />
-            <stop offset="1" stopColor="#e08a4e" stopOpacity="0" />
+            <stop offset="0" stopColor="#D78C7A" stopOpacity="0" />
+            <stop offset="0.5" stopColor="#EFC881" stopOpacity="0.45" />
+            <stop offset="1" stopColor="#D78C7A" stopOpacity="0" />
           </linearGradient>
           <radialGradient id="final-glow" cx="0.5" cy="0.5" r="0.5">
-            <stop offset="0" stopColor="#e08a4e" stopOpacity="0.26" />
-            <stop offset="1" stopColor="#e08a4e" stopOpacity="0" />
+            <stop offset="0" stopColor="#E6B66A" stopOpacity="0.22" />
+            <stop offset="1" stopColor="#E6B66A" stopOpacity="0" />
           </radialGradient>
         </defs>
 
         <g data-final-horizon className="invisible">
-          <ellipse cx="500" cy="430" rx="270" ry="62" fill="url(#final-glow)" />
-          <line x1="130" y1="430" x2="870" y2="430" stroke="url(#final-horizon-grad)" strokeWidth="1" />
+          <ellipse cx="500" cy="452" rx="280" ry="60" fill="url(#final-glow)" />
+          <line x1="130" y1="452" x2="870" y2="452" stroke="url(#final-horizon-grad)" strokeWidth="1" />
         </g>
 
         <path
           data-final-road
-          d="M 500 600 C 499 545 501 490 500 432"
+          d="M 500 600 C 499 550 501 500 500 454"
           fill="none"
           stroke="url(#final-road-grad)"
-          strokeWidth="2.5"
+          strokeWidth="2.4"
           strokeLinecap="round"
           pathLength={1}
           strokeDasharray="1"
@@ -102,53 +108,37 @@ export function FinalScene() {
         />
       </svg>
 
-      <div className="relative grid h-full place-items-center px-6">
-        <div className="w-full max-w-md pb-[env(safe-area-inset-bottom)] text-center">
-          <span data-final-rule className="invisible mx-auto block h-px w-12 bg-copper-400/60" />
-
-          <div data-final-wishes className="invisible mt-9">
-            <p className="text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
-              Sto lat, kochanie.
-            </p>
-          </div>
-
+      <div className="relative flex h-full items-end justify-center px-7 pb-[max(9svh,env(safe-area-inset-bottom))] md:items-center md:pb-0">
+        <div className="w-full max-w-md text-center">
           <p
-            data-final-sub
-            className="invisible mt-5 text-[19px] font-light leading-snug text-warm-50/90 md:text-2xl"
+            data-final-line="0"
+            className="invisible font-display text-[30px] font-medium leading-snug tracking-tight md:text-5xl"
           >
-            We wrześniu widzimy się w Kalifornii.
+            A few places behind us.
+          </p>
+          <p
+            data-final-line="1"
+            className="invisible mt-1.5 font-display text-[30px] font-medium leading-snug tracking-tight md:text-5xl"
+          >
+            One greater road ahead.
           </p>
 
-          <div
-            data-final-flights
-            className="invisible mt-8 space-y-1.5 text-[13px] font-light tabular-nums text-warm-50/60"
+          <p
+            data-final-dedication
+            className="invisible mt-9 font-display text-2xl font-medium text-gold-300 md:text-3xl"
           >
-            {FLIGHTS.map((flight) => (
-              <p key={flight.date}>
-                {flight.from} <span className="text-copper-300/80">→</span> {flight.to}
-              </p>
-            ))}
-          </div>
+            For you, Klusia.
+          </p>
 
           <p
-            data-final-signature
-            className="invisible mt-9 text-xl font-light tracking-[0.02em] text-sand-200 md:text-2xl"
+            data-final-whisper
+            className="invisible mt-3 text-[13px] font-light text-ivory-50/55 md:text-sm"
           >
-            Dla Ciebie, Klusia.
+            And for every next journey we have not imagined yet.
           </p>
 
           <div data-final-cta className="invisible mt-10">
-            <a
-              href={PDF_HREF}
-              download
-              className="inline-flex items-center gap-2.5 rounded-full bg-copper-400 px-7 py-3.5 text-sm font-semibold text-night-950 shadow-[0_8px_32px_rgba(224,138,78,0.28)] transition-colors duration-300 hover:bg-copper-300 active:scale-[0.98]"
-            >
-              <Download size={15} strokeWidth={2.25} aria-hidden="true" />
-              Pobierz potwierdzenie lotu
-            </a>
-            <p className="mt-3.5 text-xs font-light text-warm-50/50">
-              Otwórz po obejrzeniu do końca.
-            </p>
+            <DownloadButton />
           </div>
         </div>
       </div>

@@ -2,23 +2,54 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ------------------------------------------------------------------ */
+/* Paleta: Pacific night → California sunset (rgb triplets dla /alpha) */
+/* ------------------------------------------------------------------ */
+:root {
+  --night-950: 5 8 18; /* #050812 */
+  --night-900: 7 17 31; /* #07111F */
+  --night-800: 8 23 40; /* #081728 */
+  --night-700: 13 27 42; /* #0D1B2A */
+  --night-600: 16 36 58; /* #10243A */
+
+  --ivory-50: 247 240 230; /* #F7F0E6 */
+  --ivory-100: 239 229 216; /* #EFE5D8 */
+
+  --sand-300: 189 175 159; /* #BDAF9F */
+  --mist-400: 174 184 196; /* #AEB8C4 */
+
+  --gold-300: 239 200 129; /* #EFC881 */
+  --gold-400: 230 182 106; /* #E6B66A */
+  --gold-500: 216 168 92; /* #D8A85C */
+
+  --blush-300: 215 140 122; /* #D78C7A */
+  --blush-400: 199 119 109; /* #C7776D */
+
+  --pacific-300: 156 201 214; /* #9CC9D6 */
+  --pacific-400: 127 183 201; /* #7FB7C9 */
+  --pacific-500: 94 147 168; /* #5E93A8 */
+
+  --redwood-900: 23 36 31; /* #17241F */
+  --neon-400: 255 184 107; /* #FFB86B */
+}
+
 @layer base {
   html {
     scroll-behavior: auto;
   }
 
   body {
-    @apply bg-night-950 font-sans text-warm-50 antialiased;
+    @apply bg-night-950 font-sans text-ivory-50 antialiased;
     text-rendering: optimizeLegibility;
     overflow-x: hidden;
   }
 
   ::selection {
-    @apply bg-copper-400/30 text-warm-50;
+    @apply bg-gold-400/30 text-ivory-50;
   }
 
   :focus-visible {
-    outline: 2px solid theme('colors.copper.300');
+    outline: 2px solid theme('colors.gold.300');
     outline-offset: 3px;
     border-radius: 2px;
   }
@@ -28,10 +59,10 @@
     width: 10px;
   }
   ::-webkit-scrollbar-track {
-    background: theme('colors.night.950');
+    background: rgb(var(--night-950));
   }
   ::-webkit-scrollbar-thumb {
-    background: theme('colors.night.700');
+    background: rgb(var(--night-700));
     border-radius: 5px;
   }
 }
@@ -54,41 +85,38 @@ html.lenis body {
 @layer components {
   /* mały nagłówek-etykieta */
   .kicker {
-    @apply text-[11px] font-medium uppercase tracking-kicker text-sand-300/80;
+    @apply text-[11px] font-medium uppercase tracking-kicker text-gold-300/80;
   }
 
-  /* pełnoekranowe wnętrze sceny: dvh z sensownym fallbackiem,
-     żeby treść nie chowała się za paskami mobilnego Safari */
+  /* pełnoekranowe wnętrze sceny: dvh z fallbackiem, żeby treść
+     nie chowała się za paskami mobilnego Safari */
   .scene-viewport {
     height: 100vh;
     height: 100svh;
     height: 100dvh;
   }
 
-  /* stała, bardzo subtelna łuna zachodu — ociepla całą stronę */
+  /* stała łuna: pacyficzna noc u góry, ciepły horyzont na dole */
   .dusk {
     position: fixed;
     inset: 0;
     z-index: 0;
     pointer-events: none;
     background:
-      radial-gradient(120% 55% at 50% 112%, rgba(201, 113, 58, 0.13), transparent 62%),
-      radial-gradient(90% 40% at 50% -10%, rgba(63, 111, 146, 0.09), transparent 60%);
+      radial-gradient(120% 55% at 50% 114%, rgb(var(--blush-400) / 0.12), transparent 60%),
+      radial-gradient(110% 50% at 50% 118%, rgb(var(--gold-500) / 0.08), transparent 65%),
+      radial-gradient(90% 42% at 50% -10%, rgb(var(--pacific-500) / 0.1), transparent 60%);
   }
 
-  /* subtelne ziarno na całym ekranie */
+  /* subtelne ziarno filmowe na całym ekranie */
   .grain {
     position: fixed;
     inset: -50%;
     z-index: 60;
     pointer-events: none;
-    opacity: 0.05;
+    opacity: 0.045;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size: 256px 256px;
-  }
-
-  html.calm .grain {
-    opacity: 0.03;
   }
 
   /* jednorazowe wejście sceny otwarcia — celowo CSS, nie GSAP:

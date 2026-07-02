@@ -9,35 +9,33 @@ gsap.registerPlugin(ScrollTrigger, useGSAP)
 type SnapTarget = number[] | ((value: number) => number)
 
 interface SceneTimelineOptions {
-  /** scrub przekazywany do ScrollTriggera (domyślnie łagodne 0.6 s) */
+  /** scrub smoothing in seconds (slow, cinematic default) */
   scrub?: boolean | number
-  /** postęp sekcji 0–1 przy każdym scrollu (do zapisu w store) */
+  /** section progress 0–1 on every scroll (written to the store) */
   onProgress?: (progress: number) => void
-  /** miękki snap do punktów postępu (pomijany w trybie spokojnym) */
+  /** soft snap to progress points (skipped for prefers-reduced-motion) */
   snapTo?: SnapTarget
   dependencies?: unknown[]
 }
 
 /**
- * Timeline przypięty do całej wysokości sekcji-sceny:
- * start gdy sekcja dotyka góry okna, koniec gdy jej dół dociera do dołu okna.
- * Sticky wnętrze sekcji robi "pin" bez pin-spacerów ScrollTriggera,
- * więc Lenis i przeliczanie layoutu zostają trywialne.
+ * A timeline pinned to a full scene section: starts when the section
+ * touches the top of the viewport, ends when its bottom reaches the
+ * bottom. CSS sticky does the pinning — no pin spacers, no layout jumps.
  *
- * Czas timeline'a jest dopełniany do 1, dzięki czemu parametry pozycji
- * tweenów są dokładnie ułamkami postępu scrolla sekcji.
+ * The timeline is padded to a duration of exactly 1 so tween position
+ * parameters are literal scroll-progress fractions.
  */
 export function useSceneTimeline(
   sectionRef: RefObject<HTMLElement | null>,
   build: (tl: gsap.core.Timeline) => void,
-  { scrub = 0.6, onProgress, snapTo, dependencies = [] }: SceneTimelineOptions = {},
+  { scrub = 0.8, onProgress, snapTo, dependencies = [] }: SceneTimelineOptions = {},
 ) {
-  const calm = useSceneStore((s) => s.calm)
-
   useGSAP(
     () => {
       const section = sectionRef.current
       if (!section) return
+      const { reducedMotion } = useSceneStore.getState()
 
       const tl = gsap.timeline({
         defaults: { ease: 'none' },
@@ -49,20 +47,19 @@ export function useSceneTimeline(
           invalidateOnRefresh: true,
           onUpdate: onProgress ? (self) => onProgress(self.progress) : undefined,
           snap:
-            snapTo && !calm
+            snapTo && !reducedMotion
               ? {
                   snapTo,
-                  duration: { min: 0.25, max: 0.7 },
-                  delay: 0.12,
+                  duration: { min: 0.3, max: 0.8 },
+                  delay: 0.14,
                   ease: 'power2.out',
                 }
               : undefined,
         },
       })
       build(tl)
-      // dopełnienie: pozycje tweenów == postęp scrolla
       if (tl.duration() < 1) tl.set({}, {}, 1)
     },
-    { scope: sectionRef, dependencies: [...dependencies, calm], revertOnUpdate: true },
+    { scope: sectionRef, dependencies, revertOnUpdate: true },
   )
 }

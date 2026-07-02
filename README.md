@@ -1,95 +1,59 @@
-# Klusia · California Road Trip 2026
+# For you, Klusia · California Road Trip 2026
 
-Jednostronicowa, mobile-first, immersyjna opowieść sterowana scrollem:
-minimalne otwarcie (współrzędne startu) → dziewięć wspólnych miejsc na
-stylizowanym globusie 3D → odsłonięcie nowego rozdziału → filmowa mapa trasy
-przez Kalifornię → finał jednym słowem.
+A private, mobile-first, cinematic one-page reveal: a birthday letter, a globe
+emerging from the dark, nine chapters of a West Coast road trip
+(Los Angeles → … → Las Vegas → New York → Boston), and a closing frame that
+unlocks the flight confirmation.
 
 ## Stack
 
 - React 19 + Vite + TypeScript + Tailwind CSS
-- GSAP ScrollTrigger — cała choreografia scrolla (sceny sticky + scrubbed timelines)
-- Lenis — płynny scroll, spięty z tickerem GSAP
-- React Three Fiber + drei + three.js — globus (siatka geograficzna, piny, łuki, atmosfera)
-- @react-three/postprocessing — subtelny bloom (wyłączany na mobile / w trybie spokojnym)
-- zustand — most między ScrollTriggerami (DOM) a `useFrame` (canvas)
-- maath — wygładzanie ruchu kamery i rotacji globusa
+- GSAP ScrollTrigger — all scroll choreography (sticky scenes + scrubbed timelines, soft snap)
+- Lenis — smooth inertial scroll on the GSAP ticker
+- React Three Fiber + drei + three.js — the globe (dotted continents, route arcs, atmosphere)
+- @react-three/postprocessing — subtle bloom (desktop only)
+- zustand — bridge between ScrollTriggers (DOM) and `useFrame` (canvas)
+- maath — damped camera / rotation easing
 
-Bez map API, bez kluczy, bez backendu — czysty statyczny build.
+No map APIs, no keys, no backend — a fully static build.
 
-## Uruchomienie
+## Run
 
 ```bash
 npm install
 npm run dev      # http://localhost:5173
 npm run build    # tsc --noEmit + vite build → dist/
-npm run preview  # podgląd builda
+npm run preview
 ```
 
-## Deploy
+## Assets
 
-Build jest w pełni statyczny (`dist/`), a `base: './'` w `vite.config.ts` sprawia,
-że te same pliki działają na domenie głównej i w podkatalogu.
+- `public/audio/soundtrack.mp3` — background music (autoplay attempt with
+  first-interaction fallback; the control hides itself if the file is missing)
+- `public/files/potwierdzenie-lotu.pdf` — the downloadable flight confirmation
 
-### 1. Vercel
-
-```bash
-npm i -g vercel
-vercel          # zaakceptuj wykryte ustawienia (framework: Vite)
-vercel --prod
-```
-
-Lub przez dashboard: **Add New → Project → import repo** — `vercel.json` już ustawia
-`npm run build` i katalog `dist`.
-
-### 2. Netlify
-
-```bash
-npm i -g netlify-cli
-netlify deploy --build --prod
-```
-
-Lub przez dashboard: **Add new site → Import an existing project** — `netlify.toml`
-już ustawia build command i publish dir.
-
-### 3. GitHub Pages
-
-```bash
-git init && git add -A && git commit -m "California 2026"
-git remote add origin https://github.com/TWOJ-LOGIN/NAZWA-REPO.git
-git push -u origin main
-```
-
-Następnie najprościej przez `gh-pages`:
-
-```bash
-npm i -D gh-pages
-npm run build
-npx gh-pages -d dist
-```
-
-W ustawieniach repo: **Settings → Pages → Branch: `gh-pages`**. Dzięki `base: './'`
-strona działa też pod `https://twoj-login.github.io/nazwa-repo/` bez zmian w konfigu.
-
-## Struktura
+## Structure
 
 ```
 src/
-  main.tsx, App.tsx          # kompozycja scen + rejestracja pluginów GSAP
-  store.ts                   # zustand: postęp scen, tryb spokojny, instancja Lenis
-  styles/globals.css
-  data/trips.ts              # miejsca, trasa, plan, loty — całe dane w jednym pliku
-  hooks/
-    useLenis.ts              # Lenis ⇆ ScrollTrigger
-    useGSAPScroll.ts         # timeline przypięty do sekcji-sceny
+  main.tsx, App.tsx          # scene composition + GSAP plugin registration
+  store.ts                   # zustand: scene progress, unlock state, Lenis
+  styles/globals.css         # palette as CSS variables, film grain, dusk glow
+  data/trips.ts              # the nine chapters, flights, scene list
+  data/land-dots.json        # dotted continents (Natural Earth, generated)
+  hooks/useLenis.ts          # Lenis ⇆ ScrollTrigger
+  hooks/useGSAPScroll.ts     # per-scene scrubbed timeline + soft snap
   components/
-    GlobeScene.tsx           # stały canvas R3F: globus, piny, łuki, kamera, bloom
-    SceneLayout.tsx          # wysoka sekcja + sticky pełnoekranowe wnętrze
-    CaliforniaMap.tsx        # scena trasy: autorska mapa SVG rysowana scrollem
-    Progress.tsx             # dyskretna oś postępu
-    CalmModeToggle.tsx       # „Tryb spokojny” (auto przy prefers-reduced-motion)
-    scenes/                  # Intro, MemoryScene, CaliforniaReveal, FinalScene (Klusia)
-  utils/
-    geo.ts                   # lat/lon → sfera, rotacje, siatka, łuki
-    animation.ts             # mapowanie postępu scrolla na indeksy scen
+    GlobeScene.tsx           # persistent R3F canvas: globe, arcs, pins, camera
+    SceneLayout.tsx          # tall section + sticky full-screen interior
+    DownloadButton.tsx       # locked → unlocked confirmation CTA
+    MusicControl.tsx         # autoplay + fallback, tiny pause/resume
+    Progress.tsx             # discreet journey rail (desktop)
+    scenes/                  # Intro, Reveal, Transition, Chapters, Final
+  utils/geo.ts               # lat/lon → sphere, rotations, graticule, arcs
+  utils/animation.ts         # scroll progress → chapter slice
+scripts/generate-land-dots.mjs  # one-off continents generator
 ```
+
+Deploy: static `dist/` works on Vercel (`vercel.json`), Netlify (`netlify.toml`)
+and GitHub Pages (`base: './'`).

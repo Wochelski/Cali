@@ -1,42 +1,53 @@
 import type { Config } from 'tailwindcss'
 
+/**
+ * Kolory wskazują na zmienne CSS z globals.css (rgb triplets),
+ * dzięki czemu paleta "Pacific sunset" jest zdefiniowana w jednym miejscu
+ * i działa z modyfikatorami przezroczystości Tailwinda.
+ */
+const v = (name: string) => `rgb(var(--${name}) / <alpha-value>)`
+
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
       colors: {
-        // głęboki granat z ciepłym podbiciem — nie zimna czerń
         night: {
-          950: '#0a0d15',
-          900: '#0f1320',
-          800: '#151b2c',
-          700: '#1c2539',
+          950: v('night-950'),
+          900: v('night-900'),
+          800: v('night-800'),
+          700: v('night-700'),
+          600: v('night-600'),
         },
-        // warm off-white
-        warm: {
-          50: '#f5f2ea',
-          100: '#e9e4d8',
+        ivory: {
+          50: v('ivory-50'),
+          100: v('ivory-100'),
         },
-        // muted sand / beige
         sand: {
-          200: '#ded2b8',
-          300: '#cdbd9c',
-          400: '#b3a17d',
+          300: v('sand-300'),
         },
-        // copper / sunset highlight
-        copper: {
-          300: '#f0a869',
-          400: '#e08a4e',
-          500: '#c9713a',
-        },
-        // restrained ocean blue
-        ocean: {
-          300: '#7fa8c9',
-          400: '#5b8fb3',
-          500: '#3f6f92',
+        mist: {
+          400: v('mist-400'),
         },
         gold: {
-          400: '#cfa85c',
+          300: v('gold-300'),
+          400: v('gold-400'),
+          500: v('gold-500'),
+        },
+        blush: {
+          300: v('blush-300'),
+          400: v('blush-400'),
+        },
+        pacific: {
+          300: v('pacific-300'),
+          400: v('pacific-400'),
+          500: v('pacific-500'),
+        },
+        redwood: {
+          900: v('redwood-900'),
+        },
+        neon: {
+          400: v('neon-400'),
         },
       },
       fontFamily: {
@@ -48,6 +59,7 @@ export default {
           'system-ui',
           'sans-serif',
         ],
+        display: ['Fraunces', 'Georgia', 'serif'],
       },
       letterSpacing: {
         kicker: '0.24em',
