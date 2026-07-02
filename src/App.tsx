@@ -10,6 +10,7 @@ import { CaliforniaMap } from './components/CaliforniaMap'
 import { FinalScene } from './components/scenes/FinalScene'
 import { Progress } from './components/Progress'
 import { CalmModeToggle } from './components/CalmModeToggle'
+import { MusicToggle } from './components/MusicToggle'
 
 gsap.registerPlugin(ScrollTrigger, useGSAP)
 
@@ -23,6 +24,7 @@ export default function App() {
 
   return (
     <>
+      <div className="dusk" aria-hidden="true" />
       <GlobeScene />
 
       <main className="relative z-10">
@@ -35,6 +37,7 @@ export default function App() {
 
       <Progress />
       <CalmModeToggle />
+      <MusicToggle />
       <div className="grain" aria-hidden="true" />
     </>
   )

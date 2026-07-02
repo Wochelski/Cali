@@ -133,7 +133,7 @@ export function CaliforniaMap() {
   const stop = active >= 0 ? ROUTE_STOPS[active] : null
 
   return (
-    <SceneLayout ref={ref} id="route" heightVh={430}>
+    <SceneLayout ref={ref} id="route" heightVh={380}>
       <div className="flex h-full flex-col px-5 pb-8 pt-6 md:grid md:grid-cols-[1.15fr_1fr] md:items-center md:gap-10 md:px-14 md:py-10">
         {/* ------- mapa ------- */}
         <div data-map-frame className="invisible relative min-h-0 flex-1 md:h-[82svh]">

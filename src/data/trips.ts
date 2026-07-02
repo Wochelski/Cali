@@ -1,9 +1,10 @@
 /** Miejsce, w którym już byliśmy — punkt na globusie. */
 export interface Destination {
   id: string
-  name: string
-  /** drobna, czysto geograficzna metka (miasto / kraj) — bez opisów */
-  meta: string
+  /** wewnętrzna nazwa punktu (miasto) — NIE pokazywana w UI */
+  city: string
+  /** jedyna widoczna etykieta: nazwa kraju */
+  label: string
   lat: number
   lon: number
 }
@@ -32,15 +33,15 @@ export interface FlightInfo {
 /* ------------------------------------------------------------------ */
 
 export const DESTINATIONS: Destination[] = [
-  { id: 'barcelona', name: 'Barcelona', meta: 'Hiszpania', lat: 41.3874, lon: 2.1686 },
-  { id: 'berlin', name: 'Berlin', meta: 'Niemcy', lat: 52.52, lon: 13.405 },
-  { id: 'madryt', name: 'Madryt', meta: 'Hiszpania', lat: 40.4168, lon: -3.7038 },
-  { id: 'tajlandia', name: 'Tajlandia', meta: 'Bangkok', lat: 13.7563, lon: 100.5018 },
-  { id: 'chorwacja', name: 'Chorwacja', meta: 'Split', lat: 43.5081, lon: 16.4402 },
-  { id: 'chiny', name: 'Chiny', meta: 'Pekin', lat: 39.9042, lon: 116.4074 },
-  { id: 'grecja', name: 'Grecja', meta: 'Ateny', lat: 37.9838, lon: 23.7275 },
-  { id: 'nowy-jork', name: 'Nowy Jork', meta: 'USA', lat: 40.7128, lon: -74.006 },
-  { id: 'boston', name: 'Boston', meta: 'USA', lat: 42.3601, lon: -71.0589 },
+  { id: 'barcelona', city: 'Barcelona', label: 'Hiszpania', lat: 41.3874, lon: 2.1686 },
+  { id: 'berlin', city: 'Berlin', label: 'Niemcy', lat: 52.52, lon: 13.405 },
+  { id: 'madryt', city: 'Madryt', label: 'Hiszpania', lat: 40.4168, lon: -3.7038 },
+  { id: 'tajlandia', city: 'Bangkok', label: 'Tajlandia', lat: 13.7563, lon: 100.5018 },
+  { id: 'chorwacja', city: 'Split', label: 'Chorwacja', lat: 43.5081, lon: 16.4402 },
+  { id: 'chiny', city: 'Pekin', label: 'Chiny', lat: 39.9042, lon: 116.4074 },
+  { id: 'grecja', city: 'Ateny', label: 'Grecja', lat: 37.9838, lon: 23.7275 },
+  { id: 'nowy-jork', city: 'Nowy Jork', label: 'USA', lat: 40.7128, lon: -74.006 },
+  { id: 'boston', city: 'Boston', label: 'USA', lat: 42.3601, lon: -71.0589 },
 ]
 
 /** Cel następnego rozdziału — środek Kalifornii. */

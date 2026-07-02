@@ -5,12 +5,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        // deep midnight navy / near-black
+        // głęboki granat z ciepłym podbiciem — nie zimna czerń
         night: {
-          950: '#04070d',
-          900: '#060b14',
-          800: '#0a1220',
-          700: '#101b2e',
+          950: '#0a0d15',
+          900: '#0f1320',
+          800: '#151b2c',
+          700: '#1c2539',
         },
         // warm off-white
         warm: {
@@ -48,11 +48,9 @@ export default {
           'system-ui',
           'sans-serif',
         ],
-        // wyłącznie dla zamykającego słowa
-        display: ['"Instrument Serif"', 'Georgia', 'serif'],
       },
       letterSpacing: {
-        kicker: '0.32em',
+        kicker: '0.24em',
       },
       transitionTimingFunction: {
         smooth: 'cubic-bezier(0.22, 1, 0.36, 1)',

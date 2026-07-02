@@ -57,6 +57,25 @@ html.lenis body {
     @apply text-[11px] font-medium uppercase tracking-kicker text-sand-300/80;
   }
 
+  /* pełnoekranowe wnętrze sceny: dvh z sensownym fallbackiem,
+     żeby treść nie chowała się za paskami mobilnego Safari */
+  .scene-viewport {
+    height: 100vh;
+    height: 100svh;
+    height: 100dvh;
+  }
+
+  /* stała, bardzo subtelna łuna zachodu — ociepla całą stronę */
+  .dusk {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(120% 55% at 50% 112%, rgba(201, 113, 58, 0.13), transparent 62%),
+      radial-gradient(90% 40% at 50% -10%, rgba(63, 111, 146, 0.09), transparent 60%);
+  }
+
   /* subtelne ziarno na całym ekranie */
   .grain {
     position: fixed;

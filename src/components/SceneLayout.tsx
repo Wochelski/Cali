@@ -17,7 +17,7 @@ interface SceneLayoutProps {
 export const SceneLayout = forwardRef<HTMLElement, SceneLayoutProps>(
   ({ id, heightVh, children, className }, ref) => (
     <section ref={ref} id={id} className="relative" style={{ height: `${heightVh}vh` }}>
-      <div className={clsx('sticky top-0 h-svh overflow-hidden', className)}>{children}</div>
+      <div className={clsx('scene-viewport sticky top-0 overflow-hidden', className)}>{children}</div>
     </section>
   ),
 )

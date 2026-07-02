@@ -11,6 +11,7 @@ import { useSceneStore } from '../store'
 import { DESTINATIONS, CALIFORNIA } from '../data/trips'
 import { latLonToVector3, rotationForLatLon, buildGraticule, buildArcPoints } from '../utils/geo'
 import { clamp01, destinationSlice } from '../utils/animation'
+import LAND_DOTS from '../data/land-dots.json'
 
 const GLOBE_RADIUS = 2
 const N = DESTINATIONS.length
@@ -65,12 +66,27 @@ function rotationTarget(slice: number, revealProgress: number): { x: number; y: 
 function Globe() {
   const groupRef = useRef<THREE.Group>(null)
   const graticuleMaterialRef = useRef<THREE.LineBasicMaterial>(null)
+  const landMaterialRef = useRef<THREE.PointsMaterial>(null)
   const atmosphereMaterialRef = useRef<THREE.ShaderMaterial>(null)
   const pinRefs = useRef<(THREE.Mesh | null)[]>([])
   const californiaPinRef = useRef<THREE.Mesh>(null)
 
   const graticule = useMemo(() => buildGraticule(GLOBE_RADIUS, 15), [])
-  const pinGeometry = useMemo(() => new THREE.SphereGeometry(0.024, 12, 12), [])
+  const pinGeometry = useMemo(() => new THREE.SphereGeometry(0.028, 12, 12), [])
+
+  // kontynenty z kropek (Natural Earth → scripts/generate-land-dots.mjs)
+  const landGeometry = useMemo(() => {
+    const positions = new Float32Array(LAND_DOTS.length * 3)
+    ;(LAND_DOTS as [number, number][]).forEach(([lat, lon], i) => {
+      const v = latLonToVector3(lat, lon, GLOBE_RADIUS * 1.001)
+      positions[i * 3] = v.x
+      positions[i * 3 + 1] = v.y
+      positions[i * 3 + 2] = v.z
+    })
+    const geometry = new THREE.BufferGeometry()
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+    return geometry
+  }, [])
   const pinPositions = useMemo(
     () => DESTINATIONS.map((d) => latLonToVector3(d.lat, d.lon, GLOBE_RADIUS * 1.005)),
     [],
@@ -96,9 +112,9 @@ function Globe() {
       const geometry = new THREE.BufferGeometry().setFromPoints(points)
       geometry.setDrawRange(0, 0)
       const material = new THREE.LineBasicMaterial({
-        color: '#e08a4e',
+        color: '#f0a869',
         transparent: true,
-        opacity: 0.6,
+        opacity: 0.7,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
       })
@@ -110,12 +126,13 @@ function Globe() {
     return () => {
       graticule.dispose()
       pinGeometry.dispose()
+      landGeometry.dispose()
       arcs.forEach(({ geometry, material }) => {
         geometry.dispose()
         material.dispose()
       })
     }
-  }, [graticule, pinGeometry, arcs])
+  }, [graticule, pinGeometry, landGeometry, arcs])
 
   useEffect(() => {
     const group = groupRef.current
@@ -141,15 +158,19 @@ function Globe() {
       damp(group.rotation, 'x', 0.35, 1.2, delta)
     }
 
-    // siatka: ledwo widoczna z daleka, wyraźniejsza przy zbliżeniu
+    // siatka: bardzo dyskretna — kontynenty niosą teraz obraz globusa
     const grat = graticuleMaterialRef.current
-    if (grat) grat.opacity = 0.12 + 0.2 * clamp01(ip + mp * 3)
+    if (grat) grat.opacity = 0.06 + 0.1 * clamp01(ip + mp * 3)
+
+    // kontynenty wyłaniają się w miarę zbliżania
+    const land = landMaterialRef.current
+    if (land) land.opacity = 0.22 + 0.22 * clamp01(ip + mp * 3)
 
     // atmosfera ociepla się przy przejściu do Kalifornii
     const atmo = atmosphereMaterialRef.current
     if (atmo) {
       ;(atmo.uniforms.uColor.value as THREE.Color).lerpColors(ATMO_DUSK, ATMO_WARM, clamp01(rp * 1.3))
-      atmo.uniforms.uIntensity.value = 0.55 + 0.5 * clamp01(rp)
+      atmo.uniforms.uIntensity.value = 0.65 + 0.45 * clamp01(rp)
     }
 
     const arcFade = 1 - clamp01(rp * 2.2)
@@ -158,7 +179,7 @@ function Globe() {
       const draw = clamp01(slice - j)
       const count = draw <= 0 ? 0 : Math.max(2, Math.ceil(draw * arc.segments) + 1)
       arc.geometry.setDrawRange(0, count)
-      arc.material.opacity = 0.6 * arcFade
+      arc.material.opacity = 0.7 * arcFade
     })
 
     const pinFade = 1 - clamp01(rp * 2.2)
@@ -188,17 +209,30 @@ function Globe() {
       {/* ciemne wnętrze — zasłania tylną część siatki, daje głębię */}
       <mesh>
         <sphereGeometry args={[GLOBE_RADIUS * 0.99, 48, 48]} />
-        <meshBasicMaterial color="#071021" />
+        <meshBasicMaterial color="#0d1424" />
       </mesh>
 
       <lineSegments geometry={graticule}>
         <lineBasicMaterial
           ref={graticuleMaterialRef}
-          color="#4d6377"
+          color="#5d6a7c"
           transparent
-          opacity={0.14}
+          opacity={0.08}
         />
       </lineSegments>
+
+      {/* kontynenty z kropek — ciepły piasek */}
+      <points geometry={landGeometry}>
+        <pointsMaterial
+          ref={landMaterialRef}
+          color="#c9b892"
+          size={0.021}
+          sizeAttenuation
+          transparent
+          opacity={0.25}
+          depthWrite={false}
+        />
+      </points>
 
       <mesh scale={1.18}>
         <sphereGeometry args={[GLOBE_RADIUS, 48, 48]} />

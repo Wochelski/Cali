@@ -17,32 +17,21 @@ const snapToDestination = (value: number) => {
 }
 
 /**
- * Scena globusa: sam obraz żyje na stałym canvasie (GlobeScene czyta
- * memoryProgress ze store'u) — tutaj jest tylko dystans scrolla,
- * miękki snap do kolejnych miejsc i minimalny podpis: numer, nazwa, metka.
+ * Scena globusa: obraz żyje na stałym canvasie (GlobeScene czyta
+ * memoryProgress ze store'u) — tutaj tylko dystans scrolla, miękki snap
+ * i jedna widoczna etykieta: nazwa kraju.
  */
 export function MemoryScene() {
   const ref = useRef<HTMLElement>(null)
   const active = useSceneStore((s) => activeDestinationIndex(s.memoryProgress, N))
   const destination = active >= 0 ? DESTINATIONS[active] : null
 
-  useSceneTimeline(
-    ref,
-    (tl) => {
-      tl.fromTo(
-        '[data-memory-kicker]',
-        { autoAlpha: 0, y: 14 },
-        { autoAlpha: 1, y: 0, duration: 0.05 },
-        0.02,
-      ).to('[data-memory-kicker]', { autoAlpha: 0, y: -10, duration: 0.05 }, 0.93)
-    },
-    {
-      onProgress: (p) => useSceneStore.setState({ memoryProgress: p }),
-      snapTo: snapToDestination,
-    },
-  )
+  useSceneTimeline(ref, () => {}, {
+    onProgress: (p) => useSceneStore.setState({ memoryProgress: p }),
+    snapTo: snapToDestination,
+  })
 
-  // wejście podpisu przy każdej zmianie aktywnego miejsca
+  // wejście etykiety przy każdej zmianie aktywnego miejsca
   useGSAP(
     () => {
       if (!destination) return
@@ -56,28 +45,20 @@ export function MemoryScene() {
   )
 
   return (
-    <SceneLayout ref={ref} id="memory" heightVh={430}>
+    <SceneLayout ref={ref} id="memory" heightVh={400}>
       <div className="relative h-full">
-        <p
-          data-memory-kicker
-          className="kicker invisible absolute left-1/2 top-14 -translate-x-1/2 md:top-16"
-        >
-          dziewięć miejsc
-        </p>
-
         {destination && (
           <div
             key={destination.id}
             data-memory-label
-            className="invisible absolute inset-x-6 bottom-16 pb-[env(safe-area-inset-bottom)] text-center md:inset-x-auto md:bottom-auto md:left-16 md:top-1/2 md:-translate-y-1/2 md:pb-0 md:text-left"
+            className="invisible absolute inset-x-6 bottom-[max(4.5rem,env(safe-area-inset-bottom))] text-center md:inset-x-auto md:bottom-auto md:left-16 md:top-1/2 md:-translate-y-1/2 md:text-left"
           >
-            <p className="text-xs font-medium tabular-nums tracking-[0.25em] text-sand-300/70">
-              {String(active + 1).padStart(2, '0')} / {String(N).padStart(2, '0')}
-            </p>
-            <h2 className="mt-3 text-4xl font-semibold tracking-tight md:text-6xl">
-              {destination.name}
+            <h2 className="text-4xl font-semibold tracking-tight md:text-6xl">
+              {destination.label}
             </h2>
-            <p className="kicker mt-3">{destination.meta}</p>
+            <p className="mt-2.5 text-[11px] font-medium tabular-nums tracking-[0.18em] text-warm-50/35">
+              {active + 1} / {N}
+            </p>
           </div>
         )}
       </div>
