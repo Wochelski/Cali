@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: auto;
+  }
+
+  body {
+    @apply bg-night-950 font-sans text-warm-50 antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    @apply bg-copper-400/30 text-warm-50;
+  }
+
+  :focus-visible {
+    outline: 2px solid theme('colors.copper.300');
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* dyskretny scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: theme('colors.night.950');
+  }
+  ::-webkit-scrollbar-thumb {
+    background: theme('colors.night.700');
+    border-radius: 5px;
+  }
+}
+
+/* Zalecane style Lenis */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+@layer components {
+  /* mały nagłówek-etykieta */
+  .kicker {
+    @apply text-[11px] font-medium uppercase tracking-kicker text-sand-300/80;
+  }
+
+  /* subtelne ziarno na całym ekranie */
+  .grain {
+    position: fixed;
+    inset: -50%;
+    z-index: 60;
+    pointer-events: none;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 256px 256px;
+  }
+
+  html.calm .grain {
+    opacity: 0.03;
+  }
+
+  /* jednorazowe wejście sceny otwarcia — celowo CSS, nie GSAP:
+     scrollowe tweeny sceny nigdy nie dotykają tego wrappera */
+  .intro-enter {
+    animation: intro-rise 1.7s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both;
+  }
+
+  @keyframes intro-rise {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+      filter: blur(10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+      filter: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .intro-enter {
+      animation: none;
+    }
+  }
+}
