@@ -1,11 +1,10 @@
 import { useRef } from 'react'
 import { SceneLayout } from '../SceneLayout'
 import { useSceneTimeline } from '../../hooks/useGSAPScroll'
-import { DownloadButton } from '../DownloadButton'
 
 /**
  * The closing movie frame: completed-route glow on the horizon,
- * warm Pacific gradient, and the confirmation download.
+ * a warm Pacific gradient, and the last words of the story.
  */
 export function FinalScene() {
   const ref = useRef<HTMLElement>(null)
@@ -34,19 +33,18 @@ export function FinalScene() {
         '[data-final-dedication]',
         { autoAlpha: 0, y: 20 },
         { autoAlpha: 1, y: 0, duration: 0.12 },
-        0.46,
+        0.5,
       )
       .fromTo(
         '[data-final-whisper]',
         { autoAlpha: 0, y: 16 },
-        { autoAlpha: 1, y: 0, duration: 0.1 },
-        0.58,
+        { autoAlpha: 1, y: 0, duration: 0.11 },
+        0.66,
       )
-      .fromTo('[data-final-cta]', { autoAlpha: 0, y: 18 }, { autoAlpha: 1, y: 0, duration: 0.1 }, 0.7)
   })
 
   return (
-    <SceneLayout ref={ref} id="final" heightVh={280}>
+    <SceneLayout ref={ref} id="final" heightVh={250}>
       {/* warm Pacific sunset under the closing frame */}
       <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[#1d1410] via-[#0d1220]/60 to-transparent" />
 
@@ -105,20 +103,16 @@ export function FinalScene() {
             In September, we will see California together.
           </p>
 
-          <p data-final-dedication className="invisible mt-8 text-xl font-medium text-gold-300 md:text-2xl">
+          <p data-final-dedication className="invisible mt-9 text-xl font-medium text-gold-300 md:text-2xl">
             For you, Klusia.
           </p>
 
           <p
             data-final-whisper
-            className="invisible mt-2.5 text-[13px] font-light text-ivory-50/55 md:text-sm"
+            className="invisible mt-3 text-[13px] font-light text-ivory-50/55 md:text-sm"
           >
             And this is only the beginning.
           </p>
-
-          <div data-final-cta className="invisible mt-10">
-            <DownloadButton />
-          </div>
         </div>
       </div>
     </SceneLayout>

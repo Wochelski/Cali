@@ -4,9 +4,8 @@ A private, mobile-first, cinematic one-page surprise. The story unfolds in
 order: a quiet birthday opening (no destination named) → the places we have
 already visited together, on a globe → an inward pull toward the West →
 a close-up hand-drawn West Coast map following the route (Los Angeles → …
-→ Las Vegas, then New York and Boston) → the earned reveal of
-"California Road Trip 2026" with flights → a closing frame with the
-flight-confirmation download.
+→ Las Vegas) → the earned reveal of "California Road Trip 2026" with
+flights → an emotional closing frame.
 
 ## Stack
 
@@ -33,7 +32,6 @@ npm run preview
 
 - `public/audio/soundtrack.mp3` — background music (autoplay attempt with
   first-interaction fallback; the control hides itself if the file is missing)
-- `public/files/potwierdzenie-lotu.pdf` — the downloadable flight confirmation
 
 ## Structure
 
@@ -49,7 +47,6 @@ src/
   components/
     GlobeScene.tsx           # persistent R3F canvas: globe, arcs, pins, camera
     SceneLayout.tsx          # tall section + sticky full-screen interior
-    DownloadButton.tsx       # locked → unlocked confirmation CTA
     MusicControl.tsx         # autoplay + fallback, tiny pause/resume
     Progress.tsx             # discreet journey rail (desktop)
     scenes/                  # Intro, Reveal, Transition, Chapters, Final
