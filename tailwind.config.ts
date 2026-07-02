@@ -59,7 +59,6 @@ export default {
           'system-ui',
           'sans-serif',
         ],
-        display: ['Fraunces', 'Georgia', 'serif'],
       },
       letterSpacing: {
         kicker: '0.24em',

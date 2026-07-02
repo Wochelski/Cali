@@ -1,71 +1,53 @@
 import { useRef } from 'react'
 import { SceneLayout } from '../SceneLayout'
 import { useSceneTimeline } from '../../hooks/useGSAPScroll'
-import { useSceneStore } from '../../store'
 import { DownloadButton } from '../DownloadButton'
 
 /**
- * The closing frame: the globe pulls slowly away with the whole route
- * glowing, a horizon line settles, and the confirmation unlocks.
+ * The closing movie frame: completed-route glow on the horizon,
+ * warm Pacific gradient, and the confirmation download.
  */
 export function FinalScene() {
   const ref = useRef<HTMLElement>(null)
 
-  useSceneTimeline(
-    ref,
-    (tl) => {
-      tl.fromTo('[data-final-horizon]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25 }, 0.08)
-        .fromTo(
-          '[data-final-road]',
-          { strokeDashoffset: 1 },
-          { strokeDashoffset: 0, duration: 0.35 },
-          0.06,
-        )
-        .fromTo(
-          '[data-final-line="0"]',
-          { autoAlpha: 0, y: 24, filter: 'blur(8px)' },
-          { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.11 },
-          0.18,
-        )
-        .fromTo(
-          '[data-final-line="1"]',
-          { autoAlpha: 0, y: 24, filter: 'blur(8px)' },
-          { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.11 },
-          0.28,
-        )
-        .fromTo(
-          '[data-final-dedication]',
-          { autoAlpha: 0, y: 20, filter: 'blur(6px)' },
-          { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.11 },
-          0.46,
-        )
-        .fromTo(
-          '[data-final-whisper]',
-          { autoAlpha: 0, y: 16 },
-          { autoAlpha: 1, y: 0, duration: 0.1 },
-          0.58,
-        )
-        .fromTo(
-          '[data-final-cta]',
-          { autoAlpha: 0, y: 18 },
-          { autoAlpha: 1, y: 0, duration: 0.1 },
-          0.7,
-        )
-    },
-    {
-      onProgress: (p) => {
-        useSceneStore.setState({ finalProgress: p })
-        // reaching the ending unlocks the confirmation — and it stays unlocked
-        if (p > 0.05 && !useSceneStore.getState().unlocked) {
-          useSceneStore.getState().setUnlocked(true)
-        }
-      },
-    },
-  )
+  useSceneTimeline(ref, (tl) => {
+    tl.fromTo('[data-final-horizon]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25 }, 0.06)
+      .fromTo(
+        '[data-final-road]',
+        { strokeDashoffset: 1 },
+        { strokeDashoffset: 0, duration: 0.35 },
+        0.05,
+      )
+      .fromTo(
+        '[data-final-line="0"]',
+        { autoAlpha: 0, y: 24, filter: 'blur(8px)' },
+        { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.11 },
+        0.16,
+      )
+      .fromTo(
+        '[data-final-line="1"]',
+        { autoAlpha: 0, y: 22 },
+        { autoAlpha: 1, y: 0, duration: 0.11 },
+        0.3,
+      )
+      .fromTo(
+        '[data-final-dedication]',
+        { autoAlpha: 0, y: 20, filter: 'blur(6px)' },
+        { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.11 },
+        0.46,
+      )
+      .fromTo(
+        '[data-final-whisper]',
+        { autoAlpha: 0, y: 16 },
+        { autoAlpha: 1, y: 0, duration: 0.1 },
+        0.58,
+      )
+      .fromTo('[data-final-cta]', { autoAlpha: 0, y: 18 }, { autoAlpha: 1, y: 0, duration: 0.1 }, 0.7)
+  })
 
   return (
     <SceneLayout ref={ref} id="final" heightVh={240}>
-      {/* warm horizon under the pulling-away globe */}
+      {/* warm Pacific sunset under the closing frame */}
       <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[#1d1410] via-[#0d1220]/60 to-transparent" />
 
       <svg
@@ -112,29 +94,26 @@ export function FinalScene() {
         <div className="w-full max-w-md text-center">
           <p
             data-final-line="0"
-            className="invisible font-display text-[30px] font-medium leading-snug tracking-tight md:text-5xl"
+            className="invisible text-[32px] font-semibold leading-snug tracking-tight md:text-5xl"
           >
-            A few places behind us.
+            Happy birthday, my love.
           </p>
           <p
             data-final-line="1"
-            className="invisible mt-1.5 font-display text-[30px] font-medium leading-snug tracking-tight md:text-5xl"
+            className="invisible mt-4 text-[18px] font-light leading-relaxed text-ivory-50/90 md:text-2xl"
           >
-            One greater road ahead.
+            In September, we will see California together.
           </p>
 
-          <p
-            data-final-dedication
-            className="invisible mt-9 font-display text-2xl font-medium text-gold-300 md:text-3xl"
-          >
+          <p data-final-dedication className="invisible mt-8 text-xl font-medium text-gold-300 md:text-2xl">
             For you, Klusia.
           </p>
 
           <p
             data-final-whisper
-            className="invisible mt-3 text-[13px] font-light text-ivory-50/55 md:text-sm"
+            className="invisible mt-2.5 text-[13px] font-light text-ivory-50/55 md:text-sm"
           >
-            And for every next journey we have not imagined yet.
+            And this is only the beginning.
           </p>
 
           <div data-final-cta className="invisible mt-10">

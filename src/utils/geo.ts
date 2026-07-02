@@ -1,8 +1,8 @@
 import * as THREE from 'three'
 
 /**
- * Zamiana współrzędnych geograficznych na punkt na sferze.
- * Konwencja: (lat 0, lon 0) leży na osi +Z, czyli "przodem" do kamery.
+ * Geographic coordinates → point on a sphere.
+ * Convention: (lat 0, lon 0) sits on the +Z axis, facing the camera.
  */
 export function latLonToVector3(lat: number, lon: number, radius: number): THREE.Vector3 {
   const phi = THREE.MathUtils.degToRad(90 - lat)
@@ -15,10 +15,9 @@ export function latLonToVector3(lat: number, lon: number, radius: number): THREE
 }
 
 /**
- * Rotacja globusa (kolejność Eulera 'XYZ'), która ustawia dany punkt
- * dokładnie na wprost kamery patrzącej wzdłuż −Z:
- * najpierw obrót Y o −lon (długość geograficzna na środek),
- * potem obrót X o +lat (szerokość geograficzna na środek).
+ * Globe rotation (Euler order 'XYZ') that puts a given point directly
+ * in front of a camera looking down −Z: first rotate Y by −lon
+ * (longitude to center), then X by +lat (latitude to center).
  */
 export function rotationForLatLon(lat: number, lon: number): { x: number; y: number } {
   return {
@@ -28,7 +27,7 @@ export function rotationForLatLon(lat: number, lon: number): { x: number; y: num
 }
 
 /**
- * Siatka południków i równoleżników jako pozycje dla LineSegments.
+ * Meridian/parallel grid as positions for LineSegments.
  */
 export function buildGraticule(radius: number, stepDeg = 15, segments = 72): THREE.BufferGeometry {
   const positions: number[] = []
@@ -37,7 +36,7 @@ export function buildGraticule(radius: number, stepDeg = 15, segments = 72): THR
     positions.push(a.x, a.y, a.z, b.x, b.y, b.z)
   }
 
-  // równoleżniki (bez biegunów)
+  // parallels (skip the poles)
   for (let lat = -75; lat <= 75; lat += stepDeg) {
     for (let i = 0; i < segments; i++) {
       const lonA = (i / segments) * 360 - 180
@@ -46,7 +45,7 @@ export function buildGraticule(radius: number, stepDeg = 15, segments = 72): THR
     }
   }
 
-  // południki
+  // meridians
   for (let lon = -180; lon < 180; lon += stepDeg) {
     for (let i = 0; i < segments; i++) {
       const latA = (i / segments) * 180 - 90
@@ -61,8 +60,8 @@ export function buildGraticule(radius: number, stepDeg = 15, segments = 72): THR
 }
 
 /**
- * Łuk pomiędzy dwoma punktami na sferze — sferyczna interpolacja
- * z uniesieniem proporcjonalnym do odległości kątowej.
+ * Arc between two points on the sphere — spherical interpolation with
+ * a lift proportional to the angular distance.
  */
 export function buildArcPoints(
   from: { lat: number; lon: number },

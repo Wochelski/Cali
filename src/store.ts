@@ -10,15 +10,11 @@ interface SceneState {
   /** honored silently — there is intentionally no motion-settings UI */
   reducedMotion: boolean
 
-  introProgress: number
-  revealProgress: number
-  transitionProgress: number
-  chapterProgress: number
-  finalProgress: number
-
-  /** the flight confirmation unlocks once the final scene is reached */
-  unlocked: boolean
-  setUnlocked: (unlocked: boolean) => void
+  openingProgress: number
+  memIntroProgress: number
+  memoryProgress: number
+  /** the inward pull from the globe toward the West Coast map */
+  pullProgress: number
 
   lenis: Lenis | null
 }
@@ -30,18 +26,14 @@ const prefersReducedMotion =
 const isMobileViewport =
   typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches
 
-export const useSceneStore = create<SceneState>((set) => ({
+export const useSceneStore = create<SceneState>(() => ({
   isMobile: isMobileViewport,
   reducedMotion: prefersReducedMotion,
 
-  introProgress: 0,
-  revealProgress: 0,
-  transitionProgress: 0,
-  chapterProgress: 0,
-  finalProgress: 0,
-
-  unlocked: false,
-  setUnlocked: (unlocked) => set({ unlocked }),
+  openingProgress: 0,
+  memIntroProgress: 0,
+  memoryProgress: 0,
+  pullProgress: 0,
 
   lenis: null,
 }))

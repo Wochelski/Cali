@@ -1,9 +1,12 @@
 # For you, Klusia · California Road Trip 2026
 
-A private, mobile-first, cinematic one-page reveal: a birthday letter, a globe
-emerging from the dark, nine chapters of a West Coast road trip
-(Los Angeles → … → Las Vegas → New York → Boston), and a closing frame that
-unlocks the flight confirmation.
+A private, mobile-first, cinematic one-page surprise. The story unfolds in
+order: a quiet birthday opening (no destination named) → the places we have
+already visited together, on a globe → an inward pull toward the West →
+a close-up hand-drawn West Coast map following the route (Los Angeles → …
+→ Las Vegas, then New York and Boston) → the earned reveal of
+"California Road Trip 2026" with flights → a closing frame with the
+flight-confirmation download.
 
 ## Stack
 

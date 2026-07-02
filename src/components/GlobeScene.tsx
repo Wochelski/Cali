@@ -1,24 +1,27 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Stars } from '@react-three/drei'
 import { EffectComposer, Bloom } from '@react-three/postprocessing'
 import { damp } from 'maath/easing'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useGSAP } from '@gsap/react'
 import { useSceneStore } from '../store'
-import { CHAPTERS, CALIFORNIA } from '../data/trips'
+import { MEMORIES, WEST_COAST } from '../data/trips'
 import { latLonToVector3, rotationForLatLon, buildGraticule, buildArcPoints } from '../utils/geo'
-import { clamp01, chapterSlice } from '../utils/animation'
+import { clamp01, memorySlice } from '../utils/animation'
 import LAND_DOTS from '../data/land-dots.json'
 
 const GLOBE_RADIUS = 2
-const N = CHAPTERS.length
+const N = MEMORIES.length
 
-const CHAPTER_ROTATIONS = CHAPTERS.map((c) => rotationForLatLon(c.lat, c.lon))
-const CALIFORNIA_ROTATION = rotationForLatLon(CALIFORNIA.lat, CALIFORNIA.lon)
+const MEMORY_ROTATIONS = MEMORIES.map((m) => rotationForLatLon(m.lat, m.lon))
+const WEST_COAST_ROTATION = rotationForLatLon(WEST_COAST.lat, WEST_COAST.lon)
 
 const PIN_DIM = new THREE.Color('#BDAF9F')
 const PIN_BRIGHT = new THREE.Color('#FFCB8A')
-// Pacific moonlight → sunset gold as the story warms up
+// moonlit Pacific → sunset gold as the story pulls west
 const ATMO_PACIFIC = new THREE.Color('#6FA3B8')
 const ATMO_GOLD = new THREE.Color('#E6B66A')
 
@@ -43,31 +46,23 @@ const ATMOSPHERE_FRAGMENT = /* glsl */ `
 `
 
 /**
- * Globe rotation: lazy drift while hidden, California during the reveal,
- * then smooth chapter-to-chapter travel with a dwell at every stop,
- * and a slow westward drift as the final scene pulls away.
+ * Globe rotation: lazy hidden drift, then memory-to-memory travel with
+ * a dwell at every place, and finally the inward pull toward the
+ * American West Coast as the map scene takes over.
  */
-function rotationTarget(
-  slice: number,
-  revealDrive: number,
-  finalDrive: number,
-): { x: number; y: number } | null {
-  if (finalDrive > 0.002) {
-    const boston = CHAPTER_ROTATIONS[N - 1]
-    return { x: boston.x - finalDrive * 0.15, y: boston.y + finalDrive * 0.55 }
-  }
-  if (slice >= 0 || slice > -0.5) {
-    if (slice < 0) return revealDrive > 0.002 ? CHAPTER_ROTATIONS[0] : null
+function rotationTarget(slice: number, pull: number): { x: number; y: number } | null {
+  if (pull > 0.002) return WEST_COAST_ROTATION
+  if (slice >= 0) {
     const j = Math.min(N - 1, Math.floor(slice))
     const next = Math.min(N - 1, j + 1)
-    // dwell at each chapter: travel only between 25% and 75% of a segment
+    // dwell at each memory: travel only between 25% and 75% of a segment
     const f = smoothstep(clamp01((slice - j - 0.25) / 0.5))
     return {
-      x: THREE.MathUtils.lerp(CHAPTER_ROTATIONS[j].x, CHAPTER_ROTATIONS[next].x, f),
-      y: THREE.MathUtils.lerp(CHAPTER_ROTATIONS[j].y, CHAPTER_ROTATIONS[next].y, f),
+      x: THREE.MathUtils.lerp(MEMORY_ROTATIONS[j].x, MEMORY_ROTATIONS[next].x, f),
+      y: THREE.MathUtils.lerp(MEMORY_ROTATIONS[j].y, MEMORY_ROTATIONS[next].y, f),
     }
   }
-  if (revealDrive > 0.002) return CALIFORNIA_ROTATION
+  if (slice > -0.5) return MEMORY_ROTATIONS[0]
   return null
 }
 
@@ -96,7 +91,7 @@ function Globe() {
   }, [])
 
   const pinPositions = useMemo(
-    () => CHAPTERS.map((c) => latLonToVector3(c.lat, c.lon, GLOBE_RADIUS * 1.005)),
+    () => MEMORIES.map((m) => latLonToVector3(m.lat, m.lon, GLOBE_RADIUS * 1.005)),
     [],
   )
 
@@ -108,10 +103,10 @@ function Globe() {
     [],
   )
 
-  // route arcs between consecutive chapters — drawn via setDrawRange
+  // memory route arcs — drawn via setDrawRange
   const arcs = useMemo(() => {
-    return CHAPTERS.slice(0, -1).map((from, i) => {
-      const to = CHAPTERS[i + 1]
+    return MEMORIES.slice(0, -1).map((from, i) => {
+      const to = MEMORIES[i + 1]
       const points = buildArcPoints(from, to, GLOBE_RADIUS * 1.005, 64)
       const geometry = new THREE.BufferGeometry().setFromPoints(points)
       geometry.setDrawRange(0, 0)
@@ -140,7 +135,7 @@ function Globe() {
 
   useEffect(() => {
     const group = groupRef.current
-    if (group) group.rotation.set(0.35, 1.6, 0)
+    if (group) group.rotation.set(0.35, -0.7, 0)
   }, [])
 
   useFrame((state, delta) => {
@@ -148,28 +143,27 @@ function Globe() {
     if (!group) return
 
     const {
-      revealProgress: rp,
-      transitionProgress: tp,
-      chapterProgress: cp,
-      finalProgress: fp,
+      memIntroProgress: mi,
+      memoryProgress: mp,
+      pullProgress: pp,
     } = useSceneStore.getState()
-    const slice = chapterSlice(cp)
-    const target = rotationTarget(slice, clamp01(rp * 2), fp)
+    const slice = memorySlice(mp)
+    const target = rotationTarget(slice, pp)
 
     if (target) {
       damp(group.rotation, 'x', target.x, 0.55, delta)
       damp(group.rotation, 'y', target.y, 0.55, delta)
     } else {
-      // hidden pre-reveal drift, wrapped so the first real target
+      // hidden pre-emerge drift, wrapped so the first real target
       // never triggers a full extra turn
       group.rotation.y += delta * 0.04
       if (group.rotation.y > Math.PI) group.rotation.y -= Math.PI * 2
       damp(group.rotation, 'x', 0.35, 1.2, delta)
     }
 
-    // the globe emerges from darkness during the reveal
-    const emerge = clamp01(rp * 2.2)
-    const closeness = clamp01(tp + cp * 3)
+    // the globe emerges while the memory introduction plays
+    const emerge = clamp01(mi * 1.8 + mp * 3)
+    const closeness = clamp01(mp * 2 + pp)
 
     const grat = graticuleMaterialRef.current
     if (grat) grat.opacity = emerge * (0.05 + 0.07 * closeness)
@@ -177,34 +171,34 @@ function Globe() {
     const land = landMaterialRef.current
     if (land) land.opacity = emerge * (0.24 + 0.18 * closeness)
 
-    // atmosphere: moonlit Pacific → warm sunset as the road unfolds
-    const warmth = clamp01(rp * 0.35 + clamp01(slice + 1) * 0.15 + clamp01(slice - 4) * 0.1 + fp * 0.3)
+    // atmosphere warms as the story pulls toward the West
+    const warmth = clamp01(pp * 1.1)
     const atmo = atmosphereMaterialRef.current
     if (atmo) {
       ;(atmo.uniforms.uColor.value as THREE.Color).lerpColors(ATMO_PACIFIC, ATMO_GOLD, warmth)
       atmo.uniforms.uIntensity.value = emerge * (0.6 + 0.35 * warmth)
     }
 
+    // memory traces soften during the pull so the map can take over
+    const traceFade = 1 - clamp01(pp * 1.6)
     arcs.forEach((arc, j) => {
-      // arc j draws on the way from chapter j to j+1
+      // arc j draws on the way from memory j to j+1
       const draw = clamp01(slice - j)
       const count = draw <= 0 ? 0 : Math.max(2, Math.ceil(draw * arc.segments) + 1)
       arc.geometry.setDrawRange(0, count)
-      arc.material.opacity = emerge * (0.55 + 0.2 * fp)
+      arc.material.opacity = 0.6 * emerge * traceFade
     })
 
     const pulse = 1 + 0.1 * Math.sin(state.clock.elapsedTime * 2.2)
     pinRefs.current.forEach((pin, i) => {
       if (!pin) return
-      // the first pin glows early as the reveal names California
-      const revealHint = i === 0 ? clamp01((rp - 0.45) / 0.3) : 0
-      const pop = Math.max(clamp01((slice - i + 0.35) / 0.35), revealHint)
+      const pop = clamp01((slice - i + 0.35) / 0.35)
       const activeT = clamp01(1 - Math.abs(slice - i) * 1.6)
       const scale = Math.max(0.001, pop * (1 + activeT * 0.8) * (activeT > 0.5 ? pulse : 1))
       pin.scale.setScalar(scale)
       const material = pin.material as THREE.MeshBasicMaterial
-      material.color.lerpColors(PIN_DIM, PIN_BRIGHT, Math.max(activeT, revealHint * 0.7))
-      material.opacity = pop * emerge
+      material.color.lerpColors(PIN_DIM, PIN_BRIGHT, activeT)
+      material.opacity = pop * emerge * traceFade
     })
   })
 
@@ -248,12 +242,12 @@ function Globe() {
       </mesh>
 
       {arcs.map((arc, i) => (
-        <primitive key={CHAPTERS[i].id} object={arc.line} />
+        <primitive key={MEMORIES[i].id} object={arc.line} />
       ))}
 
-      {CHAPTERS.map((c, i) => (
+      {MEMORIES.map((m, i) => (
         <mesh
-          key={c.id}
+          key={m.id}
           position={pinPositions[i]}
           geometry={pinGeometry}
           ref={(el) => {
@@ -268,30 +262,26 @@ function Globe() {
 }
 
 /**
- * Camera: pushes in as the story unfolds, keeps the globe in the upper
- * part of a phone frame so chapter text at the bottom stays clear of
- * pins and route lines, and pulls slowly away for the ending.
+ * Camera: approaches through the memories, then dives inward during the
+ * pull — the page should feel like it moves INTO the map, not down it.
+ * On phones the globe rides high in the frame; captions live below.
  */
 function CameraRig() {
   useFrame(({ camera }, delta) => {
     const {
-      revealProgress: rp,
-      transitionProgress: tp,
-      chapterProgress: cp,
-      finalProgress: fp,
+      memIntroProgress: mi,
+      memoryProgress: mp,
+      pullProgress: pp,
       isMobile,
     } = useSceneStore.getState()
-    const slice = chapterSlice(cp)
+    const slice = memorySlice(mp)
 
     const approach = clamp01((slice + 1) / 1.5)
-    const eastSwing = clamp01((slice - 6) / 2) // pull out for the NY / Boston hop
     const distanceScale = isMobile ? 1.24 : 1
-    const targetZ =
-      (14 - 5.2 * clamp01(rp) - 1.4 * tp - 1.3 * approach + 1.1 * eastSwing + 3 * fp) * distanceScale
+    const targetZ = (14 - 4.6 * mi - 1.6 * approach - 0.4 * clamp01(slice / 8) - 4.4 * pp) * distanceScale
 
-    const targetX = slice > 0 ? Math.sin(slice * 0.8) * 0.28 : 0
-    // keep the globe high in the frame on phones — the text zone is below
-    const targetY = (isMobile ? -0.52 : 0.1) - 0.25 * fp
+    const targetX = slice > 0 && pp <= 0 ? Math.sin(slice * 0.8) * 0.28 : 0
+    const targetY = isMobile ? -0.52 : 0.1
 
     damp(camera.position, 'z', targetZ, 0.4, delta)
     damp(camera.position, 'x', targetX, 0.8, delta)
@@ -301,16 +291,30 @@ function CameraRig() {
   return null
 }
 
-/** The persistent canvas behind every scene. */
+/** The persistent canvas behind the opening, memories and pull scenes. */
 export function GlobeScene() {
   const isMobile = useSceneStore((s) => s.isMobile)
   const reducedMotion = useSceneStore((s) => s.reducedMotion)
   const lowPower = isMobile || reducedMotion
 
+  // once the West Coast map owns the screen the globe is invisible —
+  // stop rendering it entirely
+  const [running, setRunning] = useState(true)
+  useGSAP(() => {
+    gsap.registerPlugin(ScrollTrigger)
+    ScrollTrigger.create({
+      trigger: '#westcoast',
+      start: 'top 60%',
+      onEnter: () => setRunning(false),
+      onLeaveBack: () => setRunning(true),
+    })
+  })
+
   return (
     <div id="globe-root" className="pointer-events-none fixed inset-0 z-0" aria-hidden="true">
       <Canvas
         flat
+        frameloop={running ? 'always' : 'never'}
         dpr={isMobile ? [1, 1.5] : [1, 2]}
         camera={{ fov: 42, near: 0.1, far: 120, position: [0, 0.1, 14] }}
         gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}

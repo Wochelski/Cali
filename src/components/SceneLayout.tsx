@@ -3,16 +3,16 @@ import clsx from 'clsx'
 
 interface SceneLayoutProps {
   id: string
-  /** wysokość sekcji w vh — dystans scrolla, jakim "oddycha" scena */
+  /** section height in vh — the scroll distance the scene breathes over */
   heightVh: number
   children: ReactNode
   className?: string
 }
 
 /**
- * Scena = wysoka sekcja (dystans scrolla) + sticky pełnoekranowe wnętrze.
- * Pin robi CSS sticky, a ScrollTrigger sekcji steruje tylko timeline'em —
- * zero pin-spacerów, zero skoków layoutu.
+ * A scene = a tall section (scroll distance) + a sticky full-screen
+ * interior. CSS sticky does the pinning and ScrollTrigger only drives
+ * the timeline — no pin spacers, no layout jumps.
  */
 export const SceneLayout = forwardRef<HTMLElement, SceneLayoutProps>(
   ({ id, heightVh, children, className }, ref) => (
