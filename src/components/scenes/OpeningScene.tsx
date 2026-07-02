@@ -28,7 +28,7 @@ export function OpeningScene() {
           { autoAlpha: 1, y: 0, duration: 0.11 },
           0.38,
         )
-        .to('[data-open-content]', { autoAlpha: 0, y: -28, filter: 'blur(7px)', duration: 0.15 }, 0.82)
+        .to('[data-open-content]', { autoAlpha: 0, y: -28, duration: 0.16 }, 0.8)
     },
     {
       onProgress: (p) => useSceneStore.setState({ openingProgress: p }),
@@ -36,7 +36,7 @@ export function OpeningScene() {
   )
 
   return (
-    <SceneLayout ref={ref} id="opening" heightVh={220}>
+    <SceneLayout ref={ref} id="opening" heightVh={260}>
       <div className="intro-enter relative flex h-full items-center px-7 md:px-0">
         <div data-open-content className="mx-auto w-full max-w-[22rem] pb-[5svh] md:max-w-xl">
           <p className="kicker">For you, Klusia.</p>

@@ -9,14 +9,13 @@ export interface Memory {
   lon: number
 }
 
-/** A stop of the West Coast route. Stops without coordinates are the
- *  eastbound continuation shown after the map route completes. */
+/** A stop of the West Coast route — always a point on the sketch map. */
 export interface RouteStop {
   id: string
   name: string
   line: string
-  x?: number
-  y?: number
+  x: number
+  y: number
   labelDx?: number
   labelDy?: number
 }
@@ -61,14 +60,7 @@ export const ROUTE_STOPS: RouteStop[] = [
   { id: 'yosemite', name: 'Yosemite', line: 'Granite, waterfalls, and a sky too big to describe.', x: 335, y: 394, labelDx: -30, labelDy: -8 },
   { id: 'death-valley', name: 'Death Valley', line: 'Desert silence at the edge of nowhere.', x: 504, y: 513, labelDx: 0, labelDy: -14 },
   { id: 'las-vegas', name: 'Las Vegas', line: 'Neon in the desert. Half movie, half dream.', x: 611, y: 540, labelDx: 12, labelDy: 6 },
-  { id: 'new-york', name: 'New York', line: 'One more chapter before home.' },
-  { id: 'boston', name: 'Boston', line: 'The final stop. The memory stays longer.' },
 ]
-
-/** Stops that live on the sketch map. */
-export const MAP_STOPS = ROUTE_STOPS.filter(
-  (s): s is Required<Pick<RouteStop, 'x' | 'y'>> & RouteStop => s.x !== undefined && s.y !== undefined,
-)
 
 /* ------------------------------------------------------------------ */
 /* Flights — shown only after the reveal                               */

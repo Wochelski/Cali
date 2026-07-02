@@ -45,7 +45,7 @@ export function MemoryGlobeScene() {
   )
 
   return (
-    <SceneLayout ref={ref} id="memories" heightVh={460}>
+    <SceneLayout ref={ref} id="memories" heightVh={520}>
       <div className="relative h-full">
         {memory && (
           <div

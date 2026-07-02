@@ -108,10 +108,10 @@ html.lenis body {
       radial-gradient(90% 42% at 50% -10%, rgb(var(--pacific-500) / 0.1), transparent 60%);
   }
 
-  /* subtelne ziarno filmowe na całym ekranie */
+  /* subtle film grain over the whole screen */
   .grain {
     position: fixed;
-    inset: -50%;
+    inset: 0;
     z-index: 60;
     pointer-events: none;
     opacity: 0.045;

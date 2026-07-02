@@ -13,11 +13,16 @@ gsap.registerPlugin(ScrollTrigger)
  */
 export function useLenis() {
   useEffect(() => {
+    // iOS Safari fires resize when its URL bar collapses — recalculating
+    // every ScrollTrigger there causes mid-scroll jumps, so skip it
+    ScrollTrigger.config({ ignoreMobileResize: true })
+
     const lenis = new Lenis({
-      duration: useSceneStore.getState().reducedMotion ? 0.8 : 1.55,
+      duration: useSceneStore.getState().reducedMotion ? 0.8 : 1.7,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
-      touchMultiplier: 1.25,
+      // slightly lower multiplier = slower, more deliberate travel per swipe
+      touchMultiplier: 1.1,
     })
     useSceneStore.setState({ lenis })
 

@@ -29,7 +29,7 @@ interface SceneTimelineOptions {
 export function useSceneTimeline(
   sectionRef: RefObject<HTMLElement | null>,
   build: (tl: gsap.core.Timeline) => void,
-  { scrub = 0.8, onProgress, snapTo, dependencies = [] }: SceneTimelineOptions = {},
+  { scrub = 1.15, onProgress, snapTo, dependencies = [] }: SceneTimelineOptions = {},
 ) {
   useGSAP(
     () => {
@@ -50,8 +50,8 @@ export function useSceneTimeline(
             snapTo && !reducedMotion
               ? {
                   snapTo,
-                  duration: { min: 0.3, max: 0.8 },
-                  delay: 0.14,
+                  duration: { min: 0.35, max: 0.9 },
+                  delay: 0.15,
                   ease: 'power2.out',
                 }
               : undefined,

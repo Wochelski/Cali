@@ -20,8 +20,8 @@ export function FinalScene() {
       )
       .fromTo(
         '[data-final-line="0"]',
-        { autoAlpha: 0, y: 24, filter: 'blur(8px)' },
-        { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.11 },
+        { autoAlpha: 0, y: 24 },
+        { autoAlpha: 1, y: 0, duration: 0.12 },
         0.16,
       )
       .fromTo(
@@ -32,8 +32,8 @@ export function FinalScene() {
       )
       .fromTo(
         '[data-final-dedication]',
-        { autoAlpha: 0, y: 20, filter: 'blur(6px)' },
-        { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.11 },
+        { autoAlpha: 0, y: 20 },
+        { autoAlpha: 1, y: 0, duration: 0.12 },
         0.46,
       )
       .fromTo(
@@ -46,7 +46,7 @@ export function FinalScene() {
   })
 
   return (
-    <SceneLayout ref={ref} id="final" heightVh={240}>
+    <SceneLayout ref={ref} id="final" heightVh={280}>
       {/* warm Pacific sunset under the closing frame */}
       <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[#1d1410] via-[#0d1220]/60 to-transparent" />
 

@@ -38,7 +38,7 @@ export function RevealScene() {
   })
 
   return (
-    <SceneLayout ref={ref} id="reveal" heightVh={260}>
+    <SceneLayout ref={ref} id="reveal" heightVh={300}>
       <div className="flex h-full items-center px-7 md:px-0">
         <div data-reveal-content className="mx-auto w-full max-w-[22rem] md:max-w-3xl">
           <p data-reveal-kicker className="kicker invisible">

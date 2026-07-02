@@ -24,7 +24,7 @@ export function PullScene() {
   )
 
   return (
-    <SceneLayout ref={ref} id="pull" heightVh={160}>
+    <SceneLayout ref={ref} id="pull" heightVh={200}>
       <div className="h-full" />
     </SceneLayout>
   )

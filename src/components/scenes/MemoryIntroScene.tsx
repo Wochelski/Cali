@@ -25,12 +25,12 @@ export function MemoryIntroScene() {
       slots.forEach((slot, i) => {
         tl.fromTo(
           `[data-memintro-line="${i}"]`,
-          { autoAlpha: 0, y: 24, filter: 'blur(8px)' },
-          { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.13 },
+          { autoAlpha: 0, y: 24 },
+          { autoAlpha: 1, y: 0, duration: 0.14 },
           slot.in,
         ).to(
           `[data-memintro-line="${i}"]`,
-          { autoAlpha: 0, y: -22, filter: 'blur(8px)', duration: 0.13 },
+          { autoAlpha: 0, y: -22, duration: 0.14 },
           slot.out,
         )
       })
@@ -41,7 +41,7 @@ export function MemoryIntroScene() {
   )
 
   return (
-    <SceneLayout ref={ref} id="memintro" heightVh={190}>
+    <SceneLayout ref={ref} id="memintro" heightVh={220}>
       <div className="relative flex h-full items-end px-7 pb-[18svh] md:items-center md:justify-center md:px-6 md:pb-0">
         {LINES.map((line, i) => (
           <p

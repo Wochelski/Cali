@@ -4,15 +4,14 @@ import { useGSAP } from '@gsap/react'
 import clsx from 'clsx'
 import { SceneLayout } from './SceneLayout'
 import { useSceneTimeline } from '../hooks/useGSAPScroll'
-import { ROUTE_STOPS, MAP_STOPS, MAP_VIEWBOX } from '../data/trips'
+import { ROUTE_STOPS, MAP_VIEWBOX } from '../data/trips'
 import { remap01 } from '../utils/animation'
 
-/** portion of scene progress where the route line draws (map stops) */
+/** portion of scene progress where the route line draws */
 const DRAW_START = 0.08
-const DRAW_END = 0.7
-/** eastbound beats after the map route completes */
-const NY_AT = 0.78
-const BOSTON_AT = 0.88
+const DRAW_END = 0.82
+/** after the last stop the camera pulls back over the whole route */
+const OVERVIEW_AT = 0.86
 
 /** camera anchor: where the focused point lands inside the viewBox —
  *  slightly above middle so the caption zone below stays clear */
@@ -38,9 +37,6 @@ const ROUTE_PATH =
   'C 355 383 381 390 398 412 C 412 441 431 470 452 490 C 470 502 488 506 504 513 ' +
   'C 540 527 575 532 611 540'
 
-/** the eastbound continuation — a quiet hint leaving the map */
-const ONWARD_PATH = 'M 611 540 C 662 502 706 465 752 432'
-
 /** Sierra Nevada contour hints */
 const CONTOURS = [
   'M 298 302 C 328 342 350 382 364 432',
@@ -60,20 +56,21 @@ const DUNES = ['M 462 566 q 11 -9 22 0', 'M 484 580 q 11 -9 22 0', 'M 520 560 q 
 /**
  * The close-up West Coast scene: a hand-drawn map filling the frame,
  * a scroll-driven camera that pans stop to stop while the route draws,
- * then a gentle zoom-out as the journey turns east toward New York
- * and Boston. One caption at a time, always over a scrim, never
- * under a route dot.
+ * ending on Las Vegas — then a slow pull-back over the completed route
+ * so the journey reads as one finished West Coast arc.
+ * One caption at a time, always over a scrim, never under a route dot.
  */
 export function WestCoastMap() {
   const ref = useRef<HTMLElement>(null)
   const routeRef = useRef<SVGPathElement>(null)
   const cameraRef = useRef<SVGGElement>(null)
-  const camState = useRef({ fx: MAP_STOPS[0].x, fy: MAP_STOPS[0].y, s: CLOSE_UP })
+  const camState = useRef({ fx: ROUTE_STOPS[0].x, fy: ROUTE_STOPS[0].y, s: CLOSE_UP })
+  const appliedRef = useRef({ fx: 0, fy: 0, s: 0 })
   const thresholdsRef = useRef<number[]>([])
   const lastActiveRef = useRef(-1)
   const [active, setActive] = useState(-1)
 
-  // fraction of the route length at every map stop (sequential search —
+  // fraction of the route length at every stop (sequential search —
   // the path passes the Redwoods/Yosemite area twice)
   useLayoutEffect(() => {
     const path = routeRef.current
@@ -86,7 +83,7 @@ export function WestCoastMap() {
       points.push({ x: p.x, y: p.y })
     }
     let searchFrom = 0
-    thresholdsRef.current = MAP_STOPS.map((stop) => {
+    thresholdsRef.current = ROUTE_STOPS.map((stop) => {
       let best = searchFrom
       let bestDist = Infinity
       for (let i = searchFrom; i <= SAMPLES; i++) {
@@ -102,14 +99,14 @@ export function WestCoastMap() {
   }, [])
 
   const stopPosition = (i: number) => {
-    const t = thresholdsRef.current[i] ?? i / (MAP_STOPS.length - 1)
+    const t = thresholdsRef.current[i] ?? i / (ROUTE_STOPS.length - 1)
     return DRAW_START + t * (DRAW_END - DRAW_START)
   }
 
-  // soft snap: each map stop plus the two eastbound beats
+  // soft snap to the stops; free scroll through the closing pull-back
   const snapToStop = (value: number) => {
-    if (value < 0.06 || value > 0.93) return value
-    const points = [...MAP_STOPS.map((_, i) => stopPosition(i)), NY_AT, BOSTON_AT]
+    if (value < 0.06 || value > 0.84) return value
+    const points = ROUTE_STOPS.map((_, i) => stopPosition(i))
     return points.reduce((a, b) => (Math.abs(b - value) < Math.abs(a - value) ? b : a))
   }
 
@@ -117,8 +114,18 @@ export function WestCoastMap() {
     ref,
     (tl) => {
       const cam = camState.current
-      Object.assign(cam, { fx: MAP_STOPS[0].x, fy: MAP_STOPS[0].y, s: CLOSE_UP })
+      Object.assign(cam, { fx: ROUTE_STOPS[0].x, fy: ROUTE_STOPS[0].y, s: CLOSE_UP })
       const applyCamera = () => {
+        const applied = appliedRef.current
+        // skip sub-pixel updates — no work when the camera is resting
+        if (
+          Math.abs(applied.fx - cam.fx) < 0.05 &&
+          Math.abs(applied.fy - cam.fy) < 0.05 &&
+          Math.abs(applied.s - cam.s) < 0.0005
+        ) {
+          return
+        }
+        Object.assign(applied, cam)
         cameraRef.current?.setAttribute(
           'transform',
           `translate(${ANCHOR.x} ${ANCHOR.y}) scale(${cam.s}) translate(${-cam.fx} ${-cam.fy})`,
@@ -138,23 +145,20 @@ export function WestCoastMap() {
         )
 
       // camera pans stop to stop, synchronized with the route drawing
-      for (let i = 1; i < MAP_STOPS.length; i++) {
+      for (let i = 1; i < ROUTE_STOPS.length; i++) {
         const from = stopPosition(i - 1)
         const to = stopPosition(i)
-        tl.to(cam, { fx: MAP_STOPS[i].x, fy: MAP_STOPS[i].y, duration: Math.max(0.01, to - from) }, from)
+        tl.to(cam, { fx: ROUTE_STOPS[i].x, fy: ROUTE_STOPS[i].y, duration: Math.max(0.01, to - from) }, from)
       }
 
-      // the journey turns east: pull back to the whole map
-      tl.to(cam, { fx: 420, fy: 490, s: 1.04, duration: 0.09 }, 0.72)
-        .fromTo('[data-map-onward]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.06 }, NY_AT - 0.02)
+      // the closing frame of the map: pull back over the whole route
+      tl.to(cam, { fx: 400, fy: 560, s: 1.04, duration: 0.12, ease: 'power1.inOut' }, OVERVIEW_AT)
     },
     {
       snapTo: snapToStop,
       onProgress: (p) => {
         let idx = -1
-        if (p >= BOSTON_AT - 0.01) idx = 8
-        else if (p >= NY_AT - 0.01) idx = 7
-        else if (p >= DRAW_START && thresholdsRef.current.length) {
+        if (p >= DRAW_START && thresholdsRef.current.length) {
           const drawFrac = remap01(p, DRAW_START, DRAW_END)
           for (let i = 0; i < thresholdsRef.current.length; i++) {
             if (drawFrac >= thresholdsRef.current[i] - 0.004) idx = i
@@ -175,8 +179,8 @@ export function WestCoastMap() {
       if (active < 0) return
       gsap.fromTo(
         '[data-stop-caption]',
-        { autoAlpha: 0, y: 14, filter: 'blur(5px)' },
-        { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.6, ease: 'power3.out' },
+        { autoAlpha: 0, y: 14 },
+        { autoAlpha: 1, y: 0, duration: 0.6, ease: 'power3.out' },
       )
     },
     { scope: ref, dependencies: [active] },
@@ -185,7 +189,7 @@ export function WestCoastMap() {
   const stop = active >= 0 ? ROUTE_STOPS[active] : null
 
   return (
-    <SceneLayout ref={ref} id="westcoast" heightVh={620}>
+    <SceneLayout ref={ref} id="westcoast" heightVh={700}>
       <div data-map-stage className="invisible relative h-full">
         {/* the map fills the whole frame — a close-up, not a distant view */}
         <svg
@@ -193,12 +197,15 @@ export function WestCoastMap() {
           viewBox={`0 0 ${MAP_VIEWBOX.width} ${MAP_VIEWBOX.height}`}
           preserveAspectRatio="xMidYMid slice"
           role="img"
-          aria-label="A hand-drawn map of the American West Coast: the route runs from Los Angeles up the Pacific coast, through Yosemite and Death Valley to Las Vegas, then east"
+          aria-label="A hand-drawn map of the American West Coast: the route runs from Los Angeles up the Pacific coast, through Yosemite and Death Valley, and ends in Las Vegas"
         >
           <defs>
-            <filter id="dot-glow" x="-80%" y="-80%" width="260%" height="260%">
-              <feGaussianBlur stdDeviation="4" />
-            </filter>
+            {/* gradient halo — much cheaper than an SVG blur filter */}
+            <radialGradient id="dot-halo" cx="0.5" cy="0.5" r="0.5">
+              <stop offset="0" stopColor="#EFC881" stopOpacity="0.5" />
+              <stop offset="0.6" stopColor="#EFC881" stopOpacity="0.18" />
+              <stop offset="1" stopColor="#EFC881" stopOpacity="0" />
+            </radialGradient>
           </defs>
 
           <g ref={cameraRef}>
@@ -324,21 +331,8 @@ export function WestCoastMap() {
               strokeDashoffset="1"
             />
 
-            {/* eastbound hint after Vegas */}
-            <path
-              data-map-onward
-              className="invisible"
-              d={ONWARD_PATH}
-              fill="none"
-              stroke="#E6B66A"
-              strokeOpacity="0.4"
-              strokeWidth="1.4"
-              strokeDasharray="3 7"
-              strokeLinecap="round"
-            />
-
             {/* stops */}
-            {MAP_STOPS.map((s, i) => {
+            {ROUTE_STOPS.map((s, i) => {
               const revealed = i <= active
               const isActive = i === active
               return (
@@ -352,12 +346,11 @@ export function WestCoastMap() {
                   <circle
                     cx={s.x}
                     cy={s.y}
-                    r="8"
-                    fill="#EFC881"
-                    filter="url(#dot-glow)"
+                    r="11"
+                    fill="url(#dot-halo)"
                     className={clsx(
                       'transition-opacity duration-500',
-                      isActive ? 'opacity-65' : 'opacity-25',
+                      isActive ? 'opacity-100' : 'opacity-40',
                     )}
                   />
                   <circle cx={s.x} cy={s.y} r="3.6" fill="#050812" stroke="#EFC881" strokeWidth="1.4" />
@@ -367,7 +360,7 @@ export function WestCoastMap() {
                     y={s.y + (s.labelDy ?? -8)}
                     fontSize="11"
                     fontWeight="500"
-                    className={clsx('tabular-nums transition-opacity duration-500')}
+                    className="tabular-nums transition-opacity duration-500"
                     fill="#F7F0E6"
                     fillOpacity={isActive ? 0.9 : 0.35}
                   >
