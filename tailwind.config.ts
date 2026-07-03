@@ -46,6 +46,13 @@ export default {
         redwood: {
           900: v('redwood-900'),
         },
+        canyon: {
+          300: v('canyon-300'),
+          400: v('canyon-400'),
+        },
+        palm: {
+          500: v('palm-500'),
+        },
         neon: {
           400: v('neon-400'),
         },

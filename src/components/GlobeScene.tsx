@@ -8,16 +8,17 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
 import { useSceneStore } from '../store'
-import { MEMORIES, WEST_COAST } from '../data/trips'
+import { PAST_TRIPS, HOME, WEST } from '../data/trips'
 import { latLonToVector3, rotationForLatLon, buildGraticule, buildArcPoints } from '../utils/geo'
 import { clamp01, memorySlice } from '../utils/animation'
 import LAND_DOTS from '../data/land-dots.json'
 
 const GLOBE_RADIUS = 2
-const N = MEMORIES.length
+const N = PAST_TRIPS.length
 
-const MEMORY_ROTATIONS = MEMORIES.map((m) => rotationForLatLon(m.lat, m.lon))
-const WEST_COAST_ROTATION = rotationForLatLon(WEST_COAST.lat, WEST_COAST.lon)
+const MEMORY_ROTATIONS = PAST_TRIPS.map((m) => rotationForLatLon(m.lat, m.lon))
+const WEST_ROTATION = rotationForLatLon(WEST.lat, WEST.lon)
+const LOS_ANGELES = { lat: 34.05, lon: -118.25 }
 
 const PIN_DIM = new THREE.Color('#BDAF9F')
 const PIN_BRIGHT = new THREE.Color('#FFCB8A')
@@ -47,11 +48,11 @@ const ATMOSPHERE_FRAGMENT = /* glsl */ `
 
 /**
  * Globe rotation: lazy hidden drift, then memory-to-memory travel with
- * a dwell at every place, and finally the inward pull toward the
- * American West Coast as the map scene takes over.
+ * a dwell at every place, and finally the pull toward the American West
+ * as the new line draws itself from home to Los Angeles.
  */
 function rotationTarget(slice: number, pull: number): { x: number; y: number } | null {
-  if (pull > 0.002) return WEST_COAST_ROTATION
+  if (pull > 0.002) return WEST_ROTATION
   if (slice >= 0) {
     const j = Math.min(N - 1, Math.floor(slice))
     const next = Math.min(N - 1, j + 1)
@@ -91,7 +92,7 @@ function Globe() {
   }, [])
 
   const pinPositions = useMemo(
-    () => MEMORIES.map((m) => latLonToVector3(m.lat, m.lon, GLOBE_RADIUS * 1.005)),
+    () => PAST_TRIPS.map((m) => latLonToVector3(m.lat, m.lon, GLOBE_RADIUS * 1.005)),
     [],
   )
 
@@ -105,8 +106,8 @@ function Globe() {
 
   // memory route arcs — drawn via setDrawRange
   const arcs = useMemo(() => {
-    return MEMORIES.slice(0, -1).map((from, i) => {
-      const to = MEMORIES[i + 1]
+    return PAST_TRIPS.slice(0, -1).map((from, i) => {
+      const to = PAST_TRIPS[i + 1]
       const points = buildArcPoints(from, to, GLOBE_RADIUS * 1.005, 64)
       const geometry = new THREE.BufferGeometry().setFromPoints(points)
       geometry.setDrawRange(0, 0)
@@ -121,17 +122,34 @@ function Globe() {
     })
   }, [])
 
+  // the new line: home → Los Angeles, drawn during the build-up
+  const westArc = useMemo(() => {
+    const points = buildArcPoints(HOME, LOS_ANGELES, GLOBE_RADIUS * 1.008, 96)
+    const geometry = new THREE.BufferGeometry().setFromPoints(points)
+    geometry.setDrawRange(0, 0)
+    const material = new THREE.LineBasicMaterial({
+      color: '#FFCB8A',
+      transparent: true,
+      opacity: 0.9,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    })
+    return { line: new THREE.Line(geometry, material), geometry, material, segments: 96 }
+  }, [])
+
   useEffect(() => {
     return () => {
       graticule.dispose()
       pinGeometry.dispose()
       landGeometry.dispose()
+      westArc.geometry.dispose()
+      westArc.material.dispose()
       arcs.forEach(({ geometry, material }) => {
         geometry.dispose()
         material.dispose()
       })
     }
-  }, [graticule, pinGeometry, landGeometry, arcs])
+  }, [graticule, pinGeometry, landGeometry, arcs, westArc])
 
   useEffect(() => {
     const group = groupRef.current
@@ -161,7 +179,7 @@ function Globe() {
       damp(group.rotation, 'x', 0.35, 1.2, delta)
     }
 
-    // the globe emerges while the memory introduction plays
+    // the globe emerges while "our map of memories" plays
     const emerge = clamp01(mi * 1.8 + mp * 3)
     const closeness = clamp01(mp * 2 + pp)
 
@@ -179,8 +197,8 @@ function Globe() {
       atmo.uniforms.uIntensity.value = emerge * (0.6 + 0.35 * warmth)
     }
 
-    // memory traces soften during the pull so the map can take over
-    const traceFade = 1 - clamp01(pp * 1.6)
+    // memory traces soften during the pull so the new line stands alone
+    const traceFade = 1 - clamp01(pp * 1.4)
     arcs.forEach((arc, j) => {
       // arc j draws on the way from memory j to j+1
       const draw = clamp01(slice - j)
@@ -188,6 +206,12 @@ function Globe() {
       arc.geometry.setDrawRange(0, count)
       arc.material.opacity = 0.6 * emerge * traceFade
     })
+
+    // the new line draws itself once the build-up begins
+    const westDraw = clamp01((pp - 0.18) / 0.6)
+    const westCount = westDraw <= 0 ? 0 : Math.max(2, Math.ceil(westDraw * westArc.segments) + 1)
+    westArc.geometry.setDrawRange(0, westCount)
+    westArc.material.opacity = 0.9 * emerge
 
     const pulse = 1 + 0.1 * Math.sin(state.clock.elapsedTime * 2.2)
     pinRefs.current.forEach((pin, i) => {
@@ -198,7 +222,8 @@ function Globe() {
       pin.scale.setScalar(scale)
       const material = pin.material as THREE.MeshBasicMaterial
       material.color.lerpColors(PIN_DIM, PIN_BRIGHT, activeT)
-      material.opacity = pop * emerge * traceFade
+      // old pins soften into constellation points during the pull
+      material.opacity = pop * emerge * (1 - clamp01(pp) * 0.55)
     })
   })
 
@@ -242,10 +267,11 @@ function Globe() {
       </mesh>
 
       {arcs.map((arc, i) => (
-        <primitive key={MEMORIES[i].id} object={arc.line} />
+        <primitive key={PAST_TRIPS[i].id} object={arc.line} />
       ))}
+      <primitive object={westArc.line} />
 
-      {MEMORIES.map((m, i) => (
+      {PAST_TRIPS.map((m, i) => (
         <mesh
           key={m.id}
           position={pinPositions[i]}
@@ -262,9 +288,9 @@ function Globe() {
 }
 
 /**
- * Camera: approaches through the memories, then dives inward during the
- * pull — the page should feel like it moves INTO the map, not down it.
- * On phones the globe rides high in the frame; captions live below.
+ * Camera: approaches through the memories, then dives inward as the
+ * new line pulls west. On phones the globe rides high in the frame;
+ * captions and photo cards live below.
  */
 function CameraRig() {
   useFrame(({ camera }, delta) => {
@@ -278,7 +304,7 @@ function CameraRig() {
 
     const approach = clamp01((slice + 1) / 1.5)
     const distanceScale = isMobile ? 1.24 : 1
-    const targetZ = (14 - 4.6 * mi - 1.6 * approach - 0.4 * clamp01(slice / 8) - 4.4 * pp) * distanceScale
+    const targetZ = (14 - 4.6 * mi - 1.6 * approach - 0.4 * clamp01(slice / 9) - 3.6 * pp) * distanceScale
 
     const targetX = slice > 0 && pp <= 0 ? Math.sin(slice * 0.8) * 0.28 : 0
     const targetY = isMobile ? -0.52 : 0.1
@@ -291,19 +317,18 @@ function CameraRig() {
   return null
 }
 
-/** The persistent canvas behind the opening, memories and pull scenes. */
+/** The persistent canvas behind the memory half of the story. */
 export function GlobeScene() {
   const isMobile = useSceneStore((s) => s.isMobile)
   const reducedMotion = useSceneStore((s) => s.reducedMotion)
   const lowPower = isMobile || reducedMotion
 
-  // once the West Coast map owns the screen the globe is invisible —
-  // stop rendering it entirely
+  // once the reveal owns the screen the globe is invisible — stop rendering
   const [running, setRunning] = useState(true)
   useGSAP(() => {
     gsap.registerPlugin(ScrollTrigger)
     ScrollTrigger.create({
-      trigger: '#westcoast',
+      trigger: '#reveal',
       start: 'top 60%',
       onEnter: () => setRunning(false),
       onLeaveBack: () => setRunning(true),

@@ -30,6 +30,9 @@
   --pacific-500: 94 147 168; /* #5E93A8 */
 
   --redwood-900: 23 36 31; /* #17241F */
+  --canyon-300: 217 133 89; /* #D98559 */
+  --canyon-400: 201 111 74; /* #C96F4A */
+  --palm-500: 95 125 102; /* #5F7D66 */
   --neon-400: 255 184 107; /* #FFB86B */
 }
 
@@ -119,16 +122,16 @@ html.lenis body {
     background-size: 256px 256px;
   }
 
-  /* jednorazowe wejście sceny otwarcia — celowo CSS, nie GSAP:
-     scrollowe tweeny sceny nigdy nie dotykają tego wrappera */
+  /* one-shot entrance of the opening frame — deliberately CSS, not GSAP:
+     the scene's scroll tweens never touch this wrapper */
   .intro-enter {
-    animation: intro-rise 1.7s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both;
+    animation: intro-rise 1.9s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
   }
 
   @keyframes intro-rise {
     from {
       opacity: 0;
-      transform: translateY(16px);
+      transform: translateY(14px);
       filter: blur(10px);
     }
     to {
@@ -138,8 +141,44 @@ html.lenis body {
     }
   }
 
+  /* a warm light leak drifting slowly across the frame */
+  .light-leak {
+    position: absolute;
+    inset: -20%;
+    pointer-events: none;
+    background:
+      radial-gradient(42% 30% at 78% 18%, rgb(var(--gold-400) / 0.1), transparent 65%),
+      radial-gradient(36% 26% at 16% 78%, rgb(var(--blush-400) / 0.08), transparent 60%);
+    animation: leak-drift 16s ease-in-out infinite alternate;
+  }
+
+  @keyframes leak-drift {
+    from {
+      transform: translate3d(-2%, -1.5%, 0);
+    }
+    to {
+      transform: translate3d(2%, 1.5%, 0);
+    }
+  }
+
+  /* the closing constellation — a slow shared twinkle */
+  .constellation-star {
+    animation: star-twinkle 4.5s ease-in-out infinite alternate;
+  }
+
+  @keyframes star-twinkle {
+    from {
+      opacity: 0.25;
+    }
+    to {
+      opacity: 0.95;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .intro-enter {
+    .intro-enter,
+    .light-leak,
+    .constellation-star {
       animation: none;
     }
   }

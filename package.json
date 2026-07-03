@@ -1,9 +1,9 @@
 {
-  "name": "klusia-california-2026",
+  "name": "a-little-story",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Klusia — dziewięć wspólnych miejsc i następny rozdział: California Road Trip 2026.",
+  "description": "A birthday story — where we have been, and where we are going next.",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",

@@ -10,10 +10,11 @@ interface SceneState {
   /** honored silently — there is intentionally no motion-settings UI */
   reducedMotion: boolean
 
-  openingProgress: number
+  /** globe emerges under the "map of memories" title */
   memIntroProgress: number
+  /** the journey through the ten remembered places */
   memoryProgress: number
-  /** the inward pull from the globe toward the West Coast map */
+  /** the build-up: globe swings west, the Warsaw → LA line draws */
   pullProgress: number
 
   lenis: Lenis | null
@@ -30,7 +31,6 @@ export const useSceneStore = create<SceneState>(() => ({
   isMobile: isMobileViewport,
   reducedMotion: prefersReducedMotion,
 
-  openingProgress: 0,
   memIntroProgress: 0,
   memoryProgress: 0,
   pullProgress: 0,

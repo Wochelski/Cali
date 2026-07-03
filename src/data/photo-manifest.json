@@ -1,0 +1,231 @@
+{
+ "california/antelope-canyon": [
+  {
+   "src": "photos/california/antelope-canyon/01.jpg",
+   "w": 1200,
+   "h": 1600
+  }
+ ],
+ "california/death-valley": [
+  {
+   "src": "photos/california/death-valley/01.jpg",
+   "w": 1600,
+   "h": 660
+  },
+  {
+   "src": "photos/california/death-valley/02.jpg",
+   "w": 1600,
+   "h": 437
+  },
+  {
+   "src": "photos/california/death-valley/03.jpg",
+   "w": 1600,
+   "h": 1066
+  }
+ ],
+ "california/grand-canyon": [
+  {
+   "src": "photos/california/grand-canyon/01.jpg",
+   "w": 1600,
+   "h": 511
+  },
+  {
+   "src": "photos/california/grand-canyon/02.jpg",
+   "w": 1600,
+   "h": 1108
+  }
+ ],
+ "california/las-vegas": [
+  {
+   "src": "photos/california/las-vegas/01.jpg",
+   "w": 1600,
+   "h": 1101
+  },
+  {
+   "src": "photos/california/las-vegas/02.jpg",
+   "w": 1600,
+   "h": 274
+  },
+  {
+   "src": "photos/california/las-vegas/03.jpg",
+   "w": 1600,
+   "h": 900
+  }
+ ],
+ "california/lone-pine-alabama-hills": [
+  {
+   "src": "photos/california/lone-pine-alabama-hills/01.jpg",
+   "w": 1600,
+   "h": 1200
+  },
+  {
+   "src": "photos/california/lone-pine-alabama-hills/02.jpg",
+   "w": 1600,
+   "h": 831
+  },
+  {
+   "src": "photos/california/lone-pine-alabama-hills/03.jpg",
+   "w": 1600,
+   "h": 1066
+  }
+ ],
+ "california/los-angeles": [
+  {
+   "src": "photos/california/los-angeles/01.jpg",
+   "w": 1600,
+   "h": 1090
+  },
+  {
+   "src": "photos/california/los-angeles/02.jpg",
+   "w": 1600,
+   "h": 900
+  },
+  {
+   "src": "photos/california/los-angeles/03.jpg",
+   "w": 1600,
+   "h": 1066
+  }
+ ],
+ "california/malibu": [
+  {
+   "src": "photos/california/malibu/01.jpg",
+   "w": 1600,
+   "h": 1066
+  },
+  {
+   "src": "photos/california/malibu/02.jpg",
+   "w": 1600,
+   "h": 1200
+  },
+  {
+   "src": "photos/california/malibu/03.jpg",
+   "w": 1600,
+   "h": 911
+  }
+ ],
+ "california/monument-valley": [
+  {
+   "src": "photos/california/monument-valley/01.jpg",
+   "w": 1600,
+   "h": 1200
+  },
+  {
+   "src": "photos/california/monument-valley/02.jpg",
+   "w": 1600,
+   "h": 1200
+  }
+ ],
+ "california/page-horseshoe-bend": [
+  {
+   "src": "photos/california/page-horseshoe-bend/01.jpg",
+   "w": 1600,
+   "h": 900
+  }
+ ],
+ "california/yosemite": [
+  {
+   "src": "photos/california/yosemite/01.jpg",
+   "w": 1600,
+   "h": 1044
+  },
+  {
+   "src": "photos/california/yosemite/02.jpg",
+   "w": 1600,
+   "h": 1066
+  }
+ ],
+ "couple/hero": [
+  {
+   "src": "photos/couple/hero/01.jpg",
+   "w": 1320,
+   "h": 1943
+  },
+  {
+   "src": "photos/couple/hero/02.jpg",
+   "w": 1320,
+   "h": 1910
+  }
+ ],
+ "couple/portraits": [
+  {
+   "src": "photos/couple/portraits/01.jpg",
+   "w": 1320,
+   "h": 1748
+  },
+  {
+   "src": "photos/couple/portraits/02.jpg",
+   "w": 1320,
+   "h": 1702
+  }
+ ],
+ "past/boston": [
+  {
+   "src": "photos/past/boston/01.jpg",
+   "w": 1320,
+   "h": 1910
+  }
+ ],
+ "past/china": [
+  {
+   "src": "photos/past/china/01.jpg",
+   "w": 1320,
+   "h": 1614
+  }
+ ],
+ "past/croatia": [
+  {
+   "src": "photos/past/croatia/01.jpg",
+   "w": 1320,
+   "h": 1688
+  }
+ ],
+ "past/egypt": [
+  {
+   "src": "photos/past/egypt/01.jpg",
+   "w": 1320,
+   "h": 1702
+  }
+ ],
+ "past/germany": [
+  {
+   "src": "photos/past/germany/01.jpg",
+   "w": 1320,
+   "h": 2217
+  }
+ ],
+ "past/greece": [
+  {
+   "src": "photos/past/greece/01.jpg",
+   "w": 1320,
+   "h": 1678
+  }
+ ],
+ "past/hongkong": [
+  {
+   "src": "photos/past/hongkong/01.jpg",
+   "w": 1320,
+   "h": 2209
+  }
+ ],
+ "past/new-york": [
+  {
+   "src": "photos/past/new%20york/01.jpg",
+   "w": 1320,
+   "h": 1670
+  }
+ ],
+ "past/spain": [
+  {
+   "src": "photos/past/spain/01.jpg",
+   "w": 1320,
+   "h": 1696
+  }
+ ],
+ "past/thailand": [
+  {
+   "src": "photos/past/thailand/01.jpg",
+   "w": 1320,
+   "h": 1725
+  }
+ ]
+}

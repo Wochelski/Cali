@@ -3,12 +3,14 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
 import { useLenis } from './hooks/useLenis'
 import { GlobeScene } from './components/GlobeScene'
-import { OpeningScene } from './components/scenes/OpeningScene'
+import { IntroScene } from './components/scenes/IntroScene'
 import { MemoryIntroScene } from './components/scenes/MemoryIntroScene'
 import { MemoryGlobeScene } from './components/scenes/MemoryGlobeScene'
-import { PullScene } from './components/scenes/PullScene'
-import { WestCoastMap } from './components/WestCoastMap'
+import { OutroScene } from './components/scenes/OutroScene'
+import { BuildupScene } from './components/scenes/BuildupScene'
 import { RevealScene } from './components/scenes/RevealScene'
+import { WestMap } from './components/WestMap'
+import { PlanPanel } from './components/PlanPanel'
 import { FinalScene } from './components/scenes/FinalScene'
 import { Progress } from './components/Progress'
 import { MusicControl } from './components/MusicControl'
@@ -16,11 +18,11 @@ import { MusicControl } from './components/MusicControl'
 gsap.registerPlugin(ScrollTrigger, useGSAP)
 
 /**
- * The surprise arc, in order:
- * a quiet birthday opening (no destination named) → the places we
- * already carry with us, on the globe → an inward pull west → a
- * close-up West Coast sketch map following the route → the earned
- * reveal with flights → the closing frame and the download.
+ * A private travel film in nine scenes:
+ * the birthday opening → our map of memories (ten places, in order) →
+ * what stays with us → a new line on the map → the reveal →
+ * the American West, chapter by chapter → the real plan →
+ * and the reason all of it matters.
  */
 export default function App() {
   useLenis()
@@ -31,12 +33,14 @@ export default function App() {
       <GlobeScene />
 
       <main className="relative z-10">
-        <OpeningScene />
+        <IntroScene />
         <MemoryIntroScene />
         <MemoryGlobeScene />
-        <PullScene />
-        <WestCoastMap />
+        <OutroScene />
+        <BuildupScene />
         <RevealScene />
+        <WestMap />
+        <PlanPanel />
         <FinalScene />
       </main>
 

@@ -1,4 +1,4 @@
-import { MEMORIES } from '../data/trips'
+import { PAST_TRIPS } from '../data/trips'
 
 export const clamp01 = (v: number) => Math.min(1, Math.max(0, v))
 
@@ -7,10 +7,10 @@ export const remap01 = (v: number, inMin: number, inMax: number) =>
   clamp01((v - inMin) / (inMax - inMin))
 
 /** Portion of the memory scene before the first / after the last place. */
-export const SLICE_LEAD = 0.05
-export const SLICE_TAIL = 0.95
+export const SLICE_LEAD = 0.04
+export const SLICE_TAIL = 0.96
 
-const N = MEMORIES.length
+const N = PAST_TRIPS.length
 
 /**
  * Scene progress → fractional memory index in [−1, N−1].
