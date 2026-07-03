@@ -40,13 +40,22 @@ export function PlanPanel() {
   )
 
   return (
-    <SceneLayout ref={ref} id="plan" heightVh={400}>
+    <SceneLayout ref={ref} id="plan" heightVh={360}>
       <div className="mx-auto flex h-full max-w-3xl flex-col justify-center px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-[max(1.25rem,env(safe-area-inset-top))] md:px-8">
         <div data-plan-header className="invisible relative mb-4 md:mb-7">
           <p className="kicker">The plan</p>
           <p className="mt-2.5 max-w-[15rem] text-[17px] font-light text-ivory-50/85 md:max-w-none md:text-2xl">
             Thirteen days, one road, day by day.
           </p>
+          {/* boarding-pass stubs holding the whole story */}
+          <div className="mt-3 flex flex-wrap gap-2">
+            <span className="rounded-md border border-ivory-50/15 px-2.5 py-1 text-[10px] font-medium tabular-nums tracking-[0.14em] text-sand-300">
+              WAW → LAX · SEP 3
+            </span>
+            <span className="rounded-md border border-ivory-50/15 px-2.5 py-1 text-[10px] font-medium tabular-nums tracking-[0.14em] text-sand-300">
+              LAS → WAW · SEP 15
+            </span>
+          </div>
           {/* a small photograph of us, pinned to the corner of the plan */}
           <div className="absolute -top-2 right-0 w-24 md:-top-4 md:w-32">
             <PhotoCard photoKey="couple/portraits" index={1} alt="The two of us in the dunes" rotate={3} />

@@ -69,6 +69,7 @@ export function MemoryGlobeScene() {
               <PhotoCard
                 photoKey={memory.photoKey}
                 alt={`Us in ${memory.title}`}
+                stamp={String(memory.order).padStart(2, '0')}
                 fallbackLabel={memory.title}
               />
             </div>

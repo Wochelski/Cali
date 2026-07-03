@@ -161,7 +161,7 @@ export const MEMORY_TITLE = 'Our map of memories'
 export const MEMORY_OUTRO = [
   'Some places stay behind us.',
   'Some quietly come with us.',
-  'And then, one day, a new line appears.',
+  'And then the map quietly asked for another story.',
 ]
 
 export const BUILDUP = [
@@ -193,6 +193,10 @@ export const FINAL_LINES = [
 ]
 
 export const FINAL_WHISPER = 'And this is still only the beginning.'
+
+/** caption under the closing constellation */
+export const CONSTELLATION_NOTE =
+  'The silver lights are where we have been. The gold ones are waiting for us.'
 
 /* ------------------------------------------------------------------ */
 /* The American West map (viewBox 0 0 1000 800)                        */

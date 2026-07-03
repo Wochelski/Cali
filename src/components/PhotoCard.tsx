@@ -11,9 +11,24 @@ interface PhotoCardProps {
   rotate?: number
   /** object-position for careful cropping (e.g. "50% 30%") */
   focus?: string
+  /** tiny postmark in the corner (e.g. the chapter number) */
+  stamp?: string
   /** shown inside a procedural postcard when no photo exists */
   fallbackLabel?: string
   fallbackGradient?: string
+}
+
+/** a faded circular postmark, like on the back of a postcard */
+function Postmark({ text }: { text: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className="absolute -bottom-1.5 -right-1.5 grid h-9 w-9 rotate-[8deg] place-items-center rounded-full border border-canyon-400/50 text-[10px] font-semibold tabular-nums text-canyon-400/80"
+      style={{ borderStyle: 'dashed' }}
+    >
+      {text}
+    </span>
+  )
 }
 
 /**
@@ -28,6 +43,7 @@ export function PhotoCard({
   className,
   rotate = 0,
   focus,
+  stamp,
   fallbackLabel,
   fallbackGradient,
 }: PhotoCardProps) {
@@ -35,7 +51,7 @@ export function PhotoCard({
   const photo = getPhoto(photoKey, index)
 
   const frame = clsx(
-    'rounded-[5px] bg-ivory-100 p-1.5 pb-5 shadow-[0_16px_40px_rgba(0,0,0,0.45)]',
+    'relative rounded-[5px] bg-ivory-100 p-1.5 pb-5 shadow-[0_16px_40px_rgba(0,0,0,0.45)]',
     className,
   )
   const style = rotate ? { transform: `rotate(${rotate}deg)` } : undefined
@@ -52,6 +68,7 @@ export function PhotoCard({
             {fallbackLabel}
           </span>
         </div>
+        {stamp && <Postmark text={stamp} />}
       </figure>
     )
   }
@@ -70,6 +87,7 @@ export function PhotoCard({
           objectPosition: focus,
         }}
       />
+      {stamp && <Postmark text={stamp} />}
     </figure>
   )
 }

@@ -1,7 +1,13 @@
 import { useMemo, useRef } from 'react'
 import { SceneLayout } from '../SceneLayout'
 import { useSceneTimeline } from '../../hooks/useGSAPScroll'
-import { FINAL_LINES, FINAL_WHISPER, PAST_TRIPS, ROUTE_CHAPTERS } from '../../data/trips'
+import {
+  FINAL_LINES,
+  FINAL_WHISPER,
+  CONSTELLATION_NOTE,
+  PAST_TRIPS,
+  ROUTE_CHAPTERS,
+} from '../../data/trips'
 import { getPhoto, photoUrl } from '../../utils/photos'
 
 const FINAL_PHOTO = getPhoto('couple/hero', 1)
@@ -28,13 +34,21 @@ export function FinalScene() {
 
   useSceneTimeline(ref, (tl) => {
     tl.fromTo('[data-final-photo]', { autoAlpha: 0, scale: 1.06 }, { autoAlpha: 1, scale: 1, duration: 0.22 }, 0.03)
-      .fromTo('[data-final-stars]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2 }, 0.12)
+      .fromTo('[data-final-stars]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2 }, 0.1)
+      // the past joins into one line of light
+      .fromTo(
+        '[data-final-links]',
+        { strokeDashoffset: 1 },
+        { strokeDashoffset: 0, duration: 0.24 },
+        0.14,
+      )
+      .fromTo('[data-final-starnote]', { autoAlpha: 0, y: 10 }, { autoAlpha: 1, y: 0, duration: 0.09 }, 0.18)
     FINAL_LINES.forEach((_, i) => {
       tl.fromTo(
         `[data-final-line="${i}"]`,
         { autoAlpha: 0, y: 18 },
         { autoAlpha: 1, y: 0, duration: 0.09 },
-        0.22 + i * 0.11,
+        0.26 + i * 0.1,
       )
     })
     tl.fromTo('[data-final-whisper]', { autoAlpha: 0, y: 14 }, { autoAlpha: 1, y: 0, duration: 0.1 }, 0.82)
@@ -64,24 +78,47 @@ export function FinalScene() {
       <div className="light-leak" aria-hidden="true" />
 
       {/* the constellation of every place — past and next */}
-      <svg
-        data-final-stars
-        className="invisible absolute inset-x-0 top-[max(3rem,env(safe-area-inset-top))] mx-auto h-40 w-full max-w-md"
-        viewBox="0 0 400 180"
-        aria-hidden="true"
-      >
-        {stars.map((s, i) => (
-          <circle
-            key={i}
-            cx={s.x}
-            cy={s.y}
-            r={s.past ? 1.4 : 1.9}
-            fill={s.past ? '#AEB8C4' : '#EFC881'}
-            className="constellation-star"
-            style={{ animationDelay: `${s.delay}s`, opacity: s.past ? 0.55 : 0.9 }}
+      <div className="absolute inset-x-0 top-[max(3rem,env(safe-area-inset-top))]">
+        <svg
+          data-final-stars
+          className="invisible mx-auto h-36 w-full max-w-md"
+          viewBox="0 0 400 160"
+          aria-hidden="true"
+        >
+          {/* the past, joined into one faint line of light */}
+          <polyline
+            data-final-links
+            points={stars
+              .filter((s) => s.past)
+              .map((s) => `${s.x},${Math.min(s.y, 150)}`)
+              .join(' ')}
+            fill="none"
+            stroke="#AEB8C4"
+            strokeOpacity="0.22"
+            strokeWidth="0.8"
+            pathLength={1}
+            strokeDasharray="1"
+            strokeDashoffset="1"
           />
-        ))}
-      </svg>
+          {stars.map((s, i) => (
+            <circle
+              key={i}
+              cx={s.x}
+              cy={Math.min(s.y, 150)}
+              r={s.past ? 1.4 : 1.9}
+              fill={s.past ? '#AEB8C4' : '#EFC881'}
+              className="constellation-star"
+              style={{ animationDelay: `${s.delay}s`, opacity: s.past ? 0.55 : 0.9 }}
+            />
+          ))}
+        </svg>
+        <p
+          data-final-starnote
+          className="invisible mx-auto mt-1 max-w-[17rem] text-center text-[11px] font-light leading-relaxed text-ivory-50/55 md:max-w-sm md:text-xs"
+        >
+          {CONSTELLATION_NOTE}
+        </p>
+      </div>
 
       <div className="relative flex h-full items-end justify-center px-7 pb-[max(9svh,env(safe-area-inset-bottom))] md:items-center md:pb-0">
         <div className="w-full max-w-md text-center">

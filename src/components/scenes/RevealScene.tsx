@@ -1,7 +1,15 @@
 import { useRef } from 'react'
 import { SceneLayout } from '../SceneLayout'
+import { PhotoCard } from '../PhotoCard'
 import { useSceneTimeline } from '../../hooks/useGSAPScroll'
 import { REVEAL, FLIGHTS } from '../../data/trips'
+
+/** a small fan of postcards from the road ahead */
+const FAN = [
+  { photoKey: 'california/malibu', rotate: -7, alt: 'Malibu coast' },
+  { photoKey: 'california/yosemite', rotate: 1, alt: 'Yosemite valley' },
+  { photoKey: 'california/monument-valley', rotate: 8, alt: 'Monument Valley' },
+]
 
 /**
  * The reveal — earned after the memories and the new line on the globe.
@@ -12,30 +20,52 @@ export function RevealScene() {
   const ref = useRef<HTMLElement>(null)
 
   useSceneTimeline(ref, (tl) => {
-    tl.fromTo('[data-reveal-kicker]', { autoAlpha: 0, y: 14 }, { autoAlpha: 1, y: 0, duration: 0.08 }, 0.1)
-      .set('[data-reveal-title]', { autoAlpha: 1 }, 0.17)
+    tl.fromTo('[data-reveal-kicker]', { autoAlpha: 0, y: 14 }, { autoAlpha: 1, y: 0, duration: 0.08 }, 0.05)
+      .set('[data-reveal-title]', { autoAlpha: 1 }, 0.11)
       .fromTo(
         '[data-reveal-word]',
         { yPercent: 115 },
         { yPercent: 0, duration: 0.11, stagger: 0.016, ease: 'power2.out' },
-        0.18,
+        0.12,
       )
-      .fromTo('[data-reveal-dates]', { autoAlpha: 0, y: 18 }, { autoAlpha: 1, y: 0, duration: 0.09 }, 0.36)
-      .fromTo('[data-reveal-sub]', { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, duration: 0.1 }, 0.46)
+      // postcards from the road ahead fan out above the title
+      .fromTo(
+        '[data-reveal-card]',
+        { autoAlpha: 0, y: 24, rotate: 0 },
+        { autoAlpha: 1, y: 0, rotate: (i: number) => FAN[i]?.rotate ?? 0, duration: 0.12, stagger: 0.04 },
+        0.2,
+      )
+      .fromTo('[data-reveal-dates]', { autoAlpha: 0, y: 18 }, { autoAlpha: 1, y: 0, duration: 0.09 }, 0.32)
+      .fromTo('[data-reveal-sub]', { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, duration: 0.1 }, 0.42)
       .fromTo(
         '[data-reveal-flight]',
         { autoAlpha: 0, y: 22 },
         { autoAlpha: 1, y: 0, duration: 0.1, stagger: 0.06 },
-        0.58,
+        0.54,
       )
-      .to('[data-reveal-content]', { autoAlpha: 0, y: -26, duration: 0.13 }, 0.86)
+      // gentle drift for depth while the card holds
+      .to('[data-reveal-fan]', { y: -14, duration: 0.5 }, 0.4)
+      .to(['[data-reveal-content]', '[data-reveal-fan]'], { autoAlpha: 0, y: -26, duration: 0.11 }, 0.9)
   })
 
   return (
-    <SceneLayout ref={ref} id="reveal" heightVh={300}>
+    <SceneLayout ref={ref} id="reveal" heightVh={280}>
       {/* warm dawn behind the title card */}
       <div className="absolute inset-0 bg-gradient-to-b from-night-950 via-night-800/70 to-[#2a1a12]" />
       <div className="light-leak" aria-hidden="true" />
+
+      {/* a fan of postcards from the road ahead */}
+      <div
+        data-reveal-fan
+        className="absolute right-5 top-[max(2.5rem,env(safe-area-inset-top))] flex -space-x-7 md:right-[12%] md:top-[12%] md:-space-x-9"
+        aria-hidden="true"
+      >
+        {FAN.map((card, i) => (
+          <div key={card.photoKey} data-reveal-card className="invisible w-20 md:w-28" style={{ zIndex: i }}>
+            <PhotoCard photoKey={card.photoKey} alt={card.alt} fallbackLabel={card.alt} />
+          </div>
+        ))}
+      </div>
 
       <div className="relative flex h-full items-center px-7 md:px-0">
         <div data-reveal-content className="mx-auto w-full max-w-[22rem] md:max-w-3xl">

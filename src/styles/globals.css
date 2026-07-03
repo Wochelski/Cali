@@ -175,10 +175,44 @@ html.lenis body {
     }
   }
 
+  /* Vegas only: an old sign catching its breath */
+  .neon-flicker {
+    animation: neon-flicker 3.6s linear infinite;
+  }
+
+  @keyframes neon-flicker {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    6% {
+      opacity: 0.55;
+    }
+    8% {
+      opacity: 1;
+    }
+    52% {
+      opacity: 1;
+    }
+    54% {
+      opacity: 0.65;
+    }
+    56% {
+      opacity: 1;
+    }
+    57.5% {
+      opacity: 0.75;
+    }
+    59% {
+      opacity: 1;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .intro-enter,
     .light-leak,
-    .constellation-star {
+    .constellation-star,
+    .neon-flicker {
       animation: none;
     }
   }
