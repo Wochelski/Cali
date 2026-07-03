@@ -6,7 +6,7 @@ import { SceneLayout } from './SceneLayout'
 import { PhotoCard } from './PhotoCard'
 import { useSceneTimeline } from '../hooks/useGSAPScroll'
 import { ROUTE_CHAPTERS, MAP_VIEWBOX } from '../data/trips'
-import { remap01 } from '../utils/animation'
+import { clamp01, remap01 } from '../utils/animation'
 
 /** portion of scene progress where the route unfolds */
 const DRAW_START = 0.05
@@ -96,12 +96,19 @@ const FALLBACKS: Record<string, string> = {
  * exactly when its chapter does, the camera follows, and the last road
  * back to Vegas is a quiet dashed line.
  */
+const smoothstep = (t: number) => t * t * (3 - 2 * t)
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t
+
 export function WestMap() {
   const ref = useRef<HTMLElement>(null)
   const routeRef = useRef<SVGPathElement>(null)
+  const glowRef = useRef<SVGPathElement>(null)
+  const returnRef = useRef<SVGPathElement>(null)
   const cameraRef = useRef<SVGGElement>(null)
-  const camState = useRef({ fx: ROUTE_CHAPTERS[0].x, fy: ROUTE_CHAPTERS[0].y, s: CLOSE_UP })
-  const appliedRef = useRef({ fx: 0, fy: 0, s: 0 })
+  /** single source of truth for the scrubbed journey: t=0 at LA, t=1
+   *  when the dashed road home completes; over=1 at the final pull-back */
+  const driveState = useRef({ t: 0, over: 0 })
+  const appliedRef = useRef({ fx: 0, fy: 0, s: 0, main: -1, ret: -1 })
   const thresholdsRef = useRef<number[]>([])
   const lastActiveRef = useRef(-1)
   const [active, setActive] = useState(-1)
@@ -143,69 +150,81 @@ export function WestMap() {
   useSceneTimeline(
     ref,
     (tl) => {
-      const cam = camState.current
-      Object.assign(cam, { fx: ROUTE_CHAPTERS[0].x, fy: ROUTE_CHAPTERS[0].y, s: CLOSE_UP })
-      const applyCamera = () => {
-        const applied = appliedRef.current
-        if (
-          Math.abs(applied.fx - cam.fx) < 0.05 &&
-          Math.abs(applied.fy - cam.fy) < 0.05 &&
-          Math.abs(applied.s - cam.s) < 0.0005
-        ) {
-          return
-        }
-        Object.assign(applied, cam)
-        cameraRef.current?.setAttribute(
-          'transform',
-          `translate(${ANCHOR.x} ${ANCHOR.y}) scale(${cam.s}) translate(${-cam.fx} ${-cam.fy})`,
-        )
-      }
-      applyCamera()
-      tl.eventCallback('onUpdate', applyCamera)
+      const drive = driveState.current
+      drive.t = 0
+      drive.over = 0
 
-      const thresholds = thresholdsRef.current
+      /**
+       * Everything on the map derives deterministically from drive.t —
+       * ONE scrubbed tween, no chained same-property tweens whose lazy
+       * start-value capture corrupts under snap jumps (that was the bug:
+       * the dash went straight from hidden to fully drawn).
+       */
+      const applyJourney = () => {
+        const applied = appliedRef.current
+        const slice = drive.t * (N - 1)
+        const i = Math.min(N - 2, Math.floor(slice))
+        const f = clamp01(slice - i)
+        const thresholds = thresholdsRef.current
+
+        // route fraction: chapter i sits at thresholds[i] of the outbound
+        // road; the last segment (i = N-2) is the dashed road home
+        const th = (k: number) => thresholds[k] ?? k / (N - 2)
+        let mainFrac: number
+        let returnFrac: number
+        if (i < N - 2) {
+          mainFrac = lerp(th(i), th(i + 1), f)
+          returnFrac = 0
+        } else {
+          mainFrac = 1
+          returnFrac = f
+        }
+
+        // camera rests briefly at every stop, travels between them
+        const travel = smoothstep(clamp01((f - 0.18) / 0.64))
+        const a = ROUTE_CHAPTERS[i]
+        const b = ROUTE_CHAPTERS[Math.min(N - 1, i + 1)]
+        let fx = lerp(a.x, b.x, travel)
+        let fy = lerp(a.y, b.y, travel)
+        let s = CLOSE_UP
+        // the closing frame: pull back over the whole loop
+        fx = lerp(fx, 560, drive.over)
+        fy = lerp(fy, 480, drive.over)
+        s = lerp(s, 1.05, drive.over)
+
+        if (
+          Math.abs(applied.fx - fx) > 0.05 ||
+          Math.abs(applied.fy - fy) > 0.05 ||
+          Math.abs(applied.s - s) > 0.0005
+        ) {
+          applied.fx = fx
+          applied.fy = fy
+          applied.s = s
+          cameraRef.current?.setAttribute(
+            'transform',
+            `translate(${ANCHOR.x} ${ANCHOR.y}) scale(${s}) translate(${-fx} ${-fy})`,
+          )
+        }
+        if (Math.abs(applied.main - mainFrac) > 0.0005) {
+          applied.main = mainFrac
+          const offset = String(1 - mainFrac)
+          routeRef.current?.setAttribute('stroke-dashoffset', offset)
+          glowRef.current?.setAttribute('stroke-dashoffset', offset)
+        }
+        if (Math.abs(applied.ret - returnFrac) > 0.0005) {
+          applied.ret = returnFrac
+          returnRef.current?.setAttribute('stroke-dashoffset', String(1 - returnFrac))
+        }
+      }
+      applyJourney()
+      tl.eventCallback('onUpdate', applyJourney)
 
       tl.fromTo('[data-map-stage]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.04 }, 0.004)
         .fromTo('[data-map-coast]', { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.07 }, 0.012)
         .fromTo('[data-map-decor]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.05 }, 0.045)
-
-      // the line draws LEG BY LEG: each chapter's slice of scroll pulls
-      // the dash to that chapter's exact fraction of the road — arrival
-      // of the line and arrival of the chapter always coincide
-      tl.set('.route-draw', { strokeDashoffset: 1 - (thresholds[0] ?? 0) }, DRAW_START)
-      for (let i = 1; i < N - 1; i++) {
-        tl.to(
-          '.route-draw',
-          {
-            strokeDashoffset: 1 - (thresholds[i] ?? i / (N - 1)),
-            duration: chapterPosition(i) - chapterPosition(i - 1),
-          },
-          chapterPosition(i - 1),
-        )
-      }
-      // the dashed road home, during the final chapter's slice
-      tl.fromTo(
-        '[data-map-return]',
-        { strokeDashoffset: 1 },
-        { strokeDashoffset: 0, duration: chapterPosition(N - 1) - chapterPosition(N - 2) },
-        chapterPosition(N - 2),
-      )
-
-      // camera pans chapter to chapter on the same even rhythm
-      for (let i = 1; i < N; i++) {
-        tl.to(
-          cam,
-          {
-            fx: ROUTE_CHAPTERS[i].x,
-            fy: ROUTE_CHAPTERS[i].y,
-            duration: chapterPosition(i) - chapterPosition(i - 1),
-          },
-          chapterPosition(i - 1),
-        )
-      }
-
-      // the closing frame: pull back over the whole loop
-      tl.to(cam, { fx: 560, fy: 480, s: 1.05, duration: 0.07, ease: 'power1.inOut' }, 0.92)
+        // the whole journey: LA → ... → Antelope → the road home
+        .fromTo(drive, { t: 0 }, { t: 1, duration: DRAW_END - DRAW_START }, DRAW_START)
+        .fromTo(drive, { over: 0 }, { over: 1, duration: 0.07, ease: 'power1.inOut' }, 0.92)
     },
     {
       snapTo: snapToStop,
@@ -282,7 +301,8 @@ export function WestMap() {
               fill="none"
               stroke="#BDAF9F"
               strokeOpacity="0.42"
-              strokeWidth="1.3"
+              strokeWidth="1.1"
+              vectorEffect="non-scaling-stroke"
               pathLength={1}
               strokeDasharray="1"
               strokeDashoffset="1"
@@ -335,40 +355,42 @@ export function WestMap() {
               </g>
             </g>
 
-            {/* outbound road: glow + line */}
+            {/* outbound road: glow + line (dash written directly from drive.t) */}
             <path
-              className="route-draw"
+              ref={glowRef}
               d={MAIN_PATH}
               fill="none"
               stroke="#E6B66A"
               strokeOpacity="0.13"
-              strokeWidth="6.5"
+              strokeWidth="6"
               strokeLinecap="round"
+              vectorEffect="non-scaling-stroke"
               pathLength={1}
               strokeDasharray="1"
               strokeDashoffset="1"
             />
             <path
               ref={routeRef}
-              className="route-draw"
               d={MAIN_PATH}
               fill="none"
               stroke="#E6B66A"
-              strokeWidth="1.9"
+              strokeWidth="1.8"
               strokeLinecap="round"
+              vectorEffect="non-scaling-stroke"
               pathLength={1}
               strokeDasharray="1"
               strokeDashoffset="1"
             />
             {/* the dashed road home */}
             <path
-              data-map-return
+              ref={returnRef}
               d={RETURN_PATH}
               fill="none"
               stroke="#EFC881"
               strokeOpacity="0.55"
-              strokeWidth="1.4"
+              strokeWidth="1.3"
               strokeLinecap="round"
+              vectorEffect="non-scaling-stroke"
               pathLength={1}
               strokeDasharray="0.028 0.018"
               strokeDashoffset="1"
@@ -414,7 +436,7 @@ export function WestMap() {
         </svg>
 
         {/* text-safe zone */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-night-950/95 via-night-950/50 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-72 bg-gradient-to-t from-night-950/95 via-night-950/70 to-transparent" />
 
         {chapter && (
           <div key={chapter.id} className="absolute inset-0">
